@@ -1,0 +1,16 @@
+import salal.config as config
+
+#-------------------------------------------------------------------------------
+
+def deploy ():
+    if deploy_destination in config:
+        pass
+    else:
+        log.message('error', 'No deploy destination in current profile')
+            
+deploy: build
+	$(if $(findstring test,$(build_type)),$(error Can only deploy with production or devel build type))
+	rsync -e "/usr/bin/ssh" -av --exclude=/.well-known/ --delete $(build_dir)/ $(deploy_destination)
+    pass
+
+#-------------------------------------------------------------------------------

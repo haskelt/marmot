@@ -2,8 +2,7 @@
 
 import jinja2
 from lxml import etree as ET
-# local packages
-import config
+import salal.config as config
 
 #------------------------------------------------------------------------------
 
@@ -45,12 +44,12 @@ def render_node (node, env, variables, input_dirs):
 
 def render_page (file_stem):
 
-    input_dir = config.constants['content_root']
-    output_dir = config.constants['build_root'] + config.arguments['profile']
+    input_dir = config.content_root
+    output_dir = config.build_root + config.profile
     root = ET.parse(input_dir + '/' + file_stem + '.xml').getroot()
-    template_dirs = ['design/templates']
+    template_dirs = [config.design_root + config.templates_dir]
     env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dirs))
-    root.text = render_node(root, env, dict(), [input_dir])
+    root.text = render_node(root, env, config.variables, [input_dir])
 
     with open(output_dir + '/' + file_stem + '.html', mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
         output_fh.write(root.text)
