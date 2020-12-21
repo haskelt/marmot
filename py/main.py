@@ -1,3 +1,5 @@
-import salal
+from salal import config, actions
 
-salal.run()
+config.initialize()
+actions.initialize()
+actions.execute(config.action)

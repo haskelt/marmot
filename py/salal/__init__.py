@@ -1,1 +1,2 @@
-from salal.actions import perform as run
+from .config import config
+from .actions import actions
