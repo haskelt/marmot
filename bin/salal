@@ -1,5 +1,5 @@
 #!/bin/bash
 
 SCRIPT_DIR=`dirname "$0"`
-python $SCRIPT_DIR/../py/main.py $1 $2
+python $SCRIPT_DIR/../py/main.py --config-file $SCRIPT_DIR/../system.json $1 $2
 
