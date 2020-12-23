@@ -8,6 +8,20 @@
     "build_profiles_file": "profiles.json",
     "lib_root": "salallib",
     "action_handlers_dir": "action_handlers",
-    "filetype_handlers_dir": "filetype_handlers",
-    "deploy_command": "rsync -e \"/usr/bin/ssh\" -av --exclude=/.well-known/ --delete"
+    "file_processing_handlers_dir": "file_processing_handlers",
+    "action_commands" : {
+	"deploy" : [
+	    "rsync -e \"/usr/bin/ssh\" -av --exclude=/.well-known/ --delete {{profile_build_dir}}/ {{deploy_destination}}"
+	],
+	"clean" : [
+	    "rm -f *~",
+	    "rm -f xml/*~ xml/*/*~ xml/*/*/*~ xml/*/*/*/*~",
+	    "rm -f local/templates/*~ local/templates/blocks/*~",
+	    "rm -f local/css/*~",
+	    "rm -f local/js/*~",
+	    "rm -f local/py/*~",
+	    "rm -f local/modules/*/*~",
+	    "rm -f config/*~"
+	]
+    }
 }

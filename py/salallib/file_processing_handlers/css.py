@@ -4,13 +4,15 @@ class ProcessCSS:
     
     #---------------------------------------------------------------------------
 
-    name = '.css'
+    @classmethod
+    def get_tags (cls):
+        return ['.css']
     
     #---------------------------------------------------------------------------
 
     @classmethod
-    def process (cls, source_dir, target_dir, file_stem):
-        utilities.substitute_variables(source_dir, target_dir, file_stem + '.css')
+    def process (cls, tag, source_dir, target_dir, file_stem):
+        utilities.expand_template(source_dir, target_dir, file_stem + '.css')
     
     #---------------------------------------------------------------------------
 

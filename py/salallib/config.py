@@ -33,19 +33,23 @@ class Config:
    
     @classmethod
     def parse_arguments (cls):
-        log.message('debug', 'Parsing command-line arguments')
         parser = argparse.ArgumentParser()
         parser.add_argument('action', action = 'store')
         parser.add_argument('profile', action = 'store', nargs = '?', default = 'default')
-        parser.add_argument('-c', '--config-file', action = 'store', default = os.path.join(cls.system['salal_root'], 'system.json'))
+        parser.add_argument('--config-file', action = 'store', default = os.path.join(cls.system['salal_root'], 'system.json'))
+        parser.add_argument('--logging-level', action = 'store', default = 'INFO')
         cls._arguments = parser.parse_args()
+        # we shouldn't do any logging until this point has been reached,
+        # otherwise it won't be impacted by the logging level
+        log.set_logging_level(cls._arguments.logging_level)
         cls.action = cls._arguments.action
+        log.message('DEBUG', 'Parsed command line arguments')
 
     #---------------------------------------------------------------------------
 
     @classmethod
     def load_system_configuration (cls):
-        log.message('debug', 'Loading system configuration from ' + cls._arguments.config_file)
+        log.message('DEBUG', 'Loading system configuration from ' + cls._arguments.config_file)
         with open(cls._arguments.config_file) as system_variables_fh:
             cls.system.update(json.load(system_variables_fh)) 
 
@@ -54,7 +58,7 @@ class Config:
     @classmethod
     def load_build_profiles (cls):
         build_profiles_path = cls.system['config_root'] + cls.system['build_profiles_file']
-        log.message('debug', 'Loading build profiles from ' + build_profiles_path)
+        log.message('DEBUG', 'Loading build profiles from ' + build_profiles_path)
         with open(build_profiles_path) as build_profiles_fh:
             cls._build_profiles = json.load(build_profiles_fh)
         
@@ -71,15 +75,15 @@ class Config:
                     cls.profile = build_profile
                     break
             if cls.profile == None:
-                log.message('error', 'Default profile specified, but there are no profiles configured')
+                log.message('ERROR', 'Default profile specified, but there are no profiles configured')
         elif cls._arguments.profile in cls._build_profiles:
             cls.profile = cls._arguments.profile
         else:
-            log.message('error', 'Specified profile ' + cls._arguments.profile + ' does not exist')
-        log.message('debug', 'Using profile ' + cls.profile)
-        cls.system['profile_build_root'] = os.path.join(cls.system['build_root'], cls.profile)
+            log.message('ERROR', 'Specified profile ' + cls._arguments.profile + ' does not exist')
+        log.message('DEBUG', 'Using profile ' + cls.profile)
+        cls.system['profile_build_dir'] = os.path.join(cls.system['build_root'], cls.profile)
         
-        log.message('debug', 'Initializing system and project variables')
+        log.message('DEBUG', 'Initializing system and project variables')
         cls.project = dict()
         profile_vars = { 'system': cls.system, 'project': cls.project }
         for var_type in ['system', 'project']:

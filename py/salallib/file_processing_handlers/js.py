@@ -4,13 +4,15 @@ class ProcessJS:
     
     #---------------------------------------------------------------------------
 
-    name = '.js'
+    @classmethod
+    def get_tags (cls):
+        return ['.js']
     
     #---------------------------------------------------------------------------
 
     @classmethod
-    def process (cls, source_dir, target_dir, file_stem):
-        utilities.substitute_variables(source_dir, target_dir, file_stem + '.js')
+    def process (cls, tag, source_dir, target_dir, file_stem):
+        utilities.expand_template(source_dir, target_dir, file_stem + '.js')
     
     #---------------------------------------------------------------------------
 

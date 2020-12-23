@@ -7,7 +7,9 @@ class XMLHandler:
 
     #---------------------------------------------------------------------------
 
-    name = '.xml'
+    @classmethod
+    def get_tags (cls):
+        return ['.xml']
     
     #---------------------------------------------------------------------------
 
@@ -49,7 +51,7 @@ class XMLHandler:
     #---------------------------------------------------------------------------
 
     @classmethod
-    def process (cls, source_dir, target_dir, file_stem):
+    def process (cls, tag, source_dir, target_dir, file_stem):
 
         root = ET.parse(os.path.join(source_dir, file_stem + '.xml')).getroot()
         template_dirs = [os.path.join(config.system['design_root'], config.system['templates_dir'])]
