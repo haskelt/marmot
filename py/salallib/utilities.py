@@ -2,6 +2,7 @@ import glob
 import re
 import os
 import importlib
+import jinja2
 from salallib.config import config
 from salallib.log import log
 
@@ -37,5 +38,22 @@ class Utilities:
         return handlers
     
     #---------------------------------------------------------------------------
-    
+
+    @classmethod
+    def substitute_variables (cls, source_dir, target_dir, file_relative_path):
+        # This copies the file pointed to by <file_relative_path> from
+        # <source_dir> to <target_dir>, substituting any references to
+        # project variables with their current values.
+        #
+        # For advanced users: Technically, the files get the full Jinja
+        # treatment, so you can put anything in them that you can put in a
+        # Jinja template.
+        env = jinja2.Environment(loader = jinja2.FileSystemLoader(source_dir))
+        template = env.get_template(file_relative_path)
+        output = template.render(config.project)
+        with open(os.path.join(target_dir, file_relative_path), mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
+            output_fh.write(output)
+
+    #---------------------------------------------------------------------------
+
 utilities = Utilities

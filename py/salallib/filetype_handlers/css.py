@@ -1,17 +1,17 @@
 from salallib.utilities import utilities
 
-class ProcessJS:
+class ProcessCSS:
     
     #---------------------------------------------------------------------------
 
-    name = '.js'
+    name = '.css'
     
     #---------------------------------------------------------------------------
 
     @classmethod
     def process (cls, source_dir, target_dir, file_stem):
-        utilities.substitute_variables(source_dir, target_dir, file_stem + '.js')
+        utilities.substitute_variables(source_dir, target_dir, file_stem + '.css')
     
     #---------------------------------------------------------------------------
 
-handler = ProcessJS
+handler = ProcessCSS
