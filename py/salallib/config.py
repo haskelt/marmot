@@ -57,9 +57,8 @@ class Config:
 
     @classmethod
     def load_build_profiles (cls):
-        build_profiles_path = cls.system['config_root'] + cls.system['build_profiles_file']
-        log.message('DEBUG', 'Loading build profiles from ' + build_profiles_path)
-        with open(build_profiles_path) as build_profiles_fh:
+        log.message('DEBUG', 'Loading build profiles from ' + cls.system['profiles_file'])
+        with open(cls.system['profiles_file']) as build_profiles_fh:
             cls._build_profiles = json.load(build_profiles_fh)
         
     #---------------------------------------------------------------------------

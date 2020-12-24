@@ -17,10 +17,14 @@ class FileProcessing:
     @classmethod
     def process (cls, source_dir, target_dir, file_relative_path):
         file_stem, ext = os.path.splitext(file_relative_path)
-        if ext not in cls.handlers:
-            log.message('ERROR', 'Handling for file type ' + ext + ' is not configured.')
+        if ext in cls.handlers:
+            tag = ext
+        elif 'default' in cls.handlers:
+            tag = 'default'
         else:
-            cls.handlers[ext].process(ext, source_dir, target_dir, file_stem)
+            log.message('WARN', 'Handling for file type ' + ext + ' is not configured, skipping.')
+            return
+        cls.handlers[tag].process(ext, source_dir, target_dir, file_stem)
 
     #---------------------------------------------------------------------------
 

@@ -11,7 +11,21 @@ class Utilities:
     #---------------------------------------------------------------------------
 
     @classmethod
-    def find_files (cls, directory, extension):
+    def find_files (cls, directory):
+        # Recursively finds all files in the directory indicated by
+        # <directory>. Returns a list of paths to these files relative
+        # to <directory>.
+        result_list = []
+        for absolute_path in glob.glob(directory + '**/*', recursive = True):
+            if os.path.isfile(absolute_path):
+                relative_path = re.match('^' + directory + '(.*)$', absolute_path).group(1)
+                result_list.append(relative_path)
+        return result_list
+
+    #---------------------------------------------------------------------------
+
+    @classmethod
+    def find_files_by_extension (cls, directory, extension):
         # Recursively finds all files in the directory indicated by
         # <directory> that have the extension <extension>. Returns a list
         # of paths to these files relative to <directory>.

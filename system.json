@@ -1,11 +1,10 @@
 {
-    "config_root": "config/",
     "content_root": "content/",
     "design_root": "design/",
-    "templates_dir": "templates/",
-    "resources_dir": "resources/",
+    "template_dir": "templates/",
+    "resource_dir": "resources/",
     "build_root": "build/",
-    "build_profiles_file": "profiles.json",
+    "profiles_file": "config/profiles.json",
     "lib_root": "salallib",
     "action_handlers_dir": "action_handlers",
     "file_processing_handlers_dir": "file_processing_handlers",
@@ -13,7 +12,7 @@
 	"deploy" : [
 	    "rsync -e \"/usr/bin/ssh\" -av --exclude=/.well-known/ --delete {{profile_build_dir}}/ {{deploy_destination}}"
 	],
-	"clean" : [
+	"tidy" : [
 	    "rm -f *~",
 	    "rm -f xml/*~ xml/*/*~ xml/*/*/*~ xml/*/*/*/*~",
 	    "rm -f local/templates/*~ local/templates/blocks/*~",
@@ -22,6 +21,9 @@
 	    "rm -f local/py/*~",
 	    "rm -f local/modules/*/*~",
 	    "rm -f config/*~"
+	],
+	"nuke" : [
+	    "rm -fr {{profile_build_dir}}"
 	]
     }
 }
