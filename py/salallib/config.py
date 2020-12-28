@@ -51,7 +51,7 @@ class Config:
     def load_system_configuration (cls):
         log.message('DEBUG', 'Loading system configuration from ' + cls._arguments.config_file)
         with open(cls._arguments.config_file) as system_variables_fh:
-            cls.system.update(json.load(system_variables_fh)) 
+            cls.system.update(json.load(system_variables_fh))
 
     #---------------------------------------------------------------------------
 
@@ -79,7 +79,7 @@ class Config:
             cls.profile = cls._arguments.profile
         else:
             log.message('ERROR', 'Specified profile ' + cls._arguments.profile + ' does not exist')
-        log.message('DEBUG', 'Using profile ' + cls.profile)
+        log.message('INFO', 'Using profile ' + cls.profile)
         cls.system['profile_build_dir'] = os.path.join(cls.system['build_root'], cls.profile)
         
         log.message('DEBUG', 'Initializing system and project variables')
@@ -90,6 +90,8 @@ class Config:
                 profile_vars[var_type].update(cls._build_profiles['common'][var_type])
             if var_type in cls._build_profiles[cls.profile]:
                 profile_vars[var_type].update(cls._build_profiles[cls.profile][var_type])
+        if 'theme_root' in config.system:
+            log.message('INFO', 'Using theme ' + config.system['theme_root'])
                 
     #---------------------------------------------------------------------------
 

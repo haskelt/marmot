@@ -17,6 +17,8 @@ class FileProcessing:
     @classmethod
     def process (cls, source_dir, target_dir, file_relative_path):
         file_stem, ext = os.path.splitext(file_relative_path)
+        # strip off the initial '.' in the extension so we just have letters
+        ext = ext[1:]
         if ext in cls.handlers:
             tag = ext
         elif 'default' in cls.handlers:

@@ -2,11 +2,21 @@ import glob
 import re
 import os
 import importlib
-import jinja2
 from salallib.config import config
 from salallib.log import log
 
 class Utilities:
+
+    #---------------------------------------------------------------------------
+    @classmethod
+    def find_subdirectories (cls, directory):
+        # Returns a list of all subdirectories in the directory indicated by
+        # <directory>. Unlike <find_files>, this method is non-recursive.
+        result_list = []
+        for entry in os.scandir(directory):
+            if entry.is_dir():
+                result_list.append(entry.name)
+        return result_list
 
     #---------------------------------------------------------------------------
 
@@ -15,6 +25,13 @@ class Utilities:
         # Recursively finds all files in the directory indicated by
         # <directory>. Returns a list of paths to these files relative
         # to <directory>.
+
+        # For proper creation of a relative path, we need a consistent
+        # convention regarding whether the directory has or does not
+        # have a trailing separator. Here we've gone with 'has', and
+        # add it if missing.
+        if directory[-1] != os.sep:
+            directory += os.sep
         result_list = []
         for absolute_path in glob.glob(directory + '**/*', recursive = True):
             if os.path.isfile(absolute_path):
@@ -29,6 +46,13 @@ class Utilities:
         # Recursively finds all files in the directory indicated by
         # <directory> that have the extension <extension>. Returns a list
         # of paths to these files relative to <directory>.
+
+        # For proper creation of a relative path, we need a consistent
+        # convention regarding whether the directory has or does not
+        # have a trailing separator. Here we've gone with 'has', and
+        # add it if missing.
+        if directory[-1] != os.sep:
+            directory += os.sep
         result_list = []
         for absolute_path in glob.glob(directory + '**/*.' + extension, recursive = True):
             relative_path = re.match('^' + directory + '(.*)$', absolute_path).group(1)
@@ -93,23 +117,6 @@ class Utilities:
                 result += substring
         return result
             
-    #---------------------------------------------------------------------------
-
-    @classmethod
-    def expand_template (cls, source_dir, target_dir, file_relative_path):
-        # This copies the file pointed to by <file_relative_path> from
-        # <source_dir> to <target_dir>, substituting any references to
-        # project variables with their current values.
-        #
-        # For advanced users: Technically, the files get the full Jinja
-        # treatment, so you can put anything in them that you can put in a
-        # Jinja template.
-        env = jinja2.Environment(loader = jinja2.FileSystemLoader(source_dir))
-        template = env.get_template(file_relative_path)
-        output = template.render(config.project)
-        with open(os.path.join(target_dir, file_relative_path), mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
-            output_fh.write(output)
-
     #---------------------------------------------------------------------------
 
 utilities = Utilities
