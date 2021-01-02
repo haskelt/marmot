@@ -1,0 +1,37 @@
+{
+    "config_root": "config/",
+    "content_root": "content/",
+    "design_root": "design/",
+    "template_dir": "templates/",
+    "resource_dir": "resources/",
+    "module_dir": "modules/",
+    "build_root": "build/",
+    "profiles_file": "config/profiles.json",
+    "lib_root": "salallib",
+    "command_handlers_dir": "command_handlers",
+    "file_processing_handlers_dir": "file_processing_handlers",
+    "content_file_types": [ "xml", "png", "jpg", "svg" ],
+    "action_commands" : {
+	"build" : [
+	    { "type": "internal", "command": "build" }
+	],
+	"deploy" : [
+	    { "type": "external",
+	      "command": "rsync -e \"/usr/bin/ssh\" -av --exclude=/.well-known/ --delete {{profile_build_dir}}/ {{deploy_destination}}"
+	    }
+	],
+	"tidy" : [
+	    { "type": "external", "command": "rm -f *~" },
+	    { "type": "external", "command": "rm -f content/*~ content/*/*~ content/*/*/*~ content/*/*/*/*~"},
+	    { "type": "external", "command": "rm -f design/templates/*~"},
+	    { "type": "external", "command": "rm -f local/css/*~"},
+	    { "type": "external", "command": "rm -f local/js/*~"},
+	    { "type": "external", "command": "rm -f local/py/*~"},
+	    { "type": "external", "command": "rm -f local/modules/*/*~"},
+	    { "type": "external", "command": "rm -f config/*~"}
+	],
+	"nuke" : [
+	    { "type": "external", "command": "rm -fr {{profile_build_dir}}"}
+	]
+    }
+}

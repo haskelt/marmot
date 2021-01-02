@@ -2,8 +2,8 @@ import glob
 import re
 import os
 import importlib
-from salallib.config import config
-from salallib.log import log
+from salal.salallib.config import config
+from salal.salallib.log import log
 
 class Utilities:
 

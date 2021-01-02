@@ -1,5 +1,9 @@
 #!/bin/bash
 
+
 SCRIPT_DIR=`dirname "$0"`
-python $SCRIPT_DIR/../py/main.py --config-file $SCRIPT_DIR/../system.json $@
+BASE_DIR=`dirname "$SCRIPT_DIR"`
+export PYTHONPATH=$BASE_DIR
+echo $PYTHONPATH
+python -m salal $@
 
