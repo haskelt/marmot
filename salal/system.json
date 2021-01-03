@@ -1,15 +1,17 @@
 {
-    "config_root": "config/",
-    "content_root": "content/",
-    "design_root": "design/",
-    "template_dir": "templates/",
-    "resource_dir": "resources/",
-    "module_dir": "modules/",
-    "build_root": "build/",
-    "profiles_file": "config/profiles.json",
-    "lib_root": "salallib",
-    "command_handlers_dir": "command_handlers",
-    "file_processing_handlers_dir": "file_processing_handlers",
+    "paths" : {
+	"config_root": "config/",
+	"content_root": "content/",
+	"design_root": "design/",
+	"template_dir": "templates/",
+	"resource_dir": "resources/",
+	"module_dir": "modules/",
+	"build_root": "build/",
+	"profiles_file": "config/profiles.json",
+	"script_root": "scripts",
+	"command_handlers_dir": "command_handlers",
+	"file_processing_handlers_dir": "file_processing_handlers"
+    },
     "content_file_types": [ "xml", "png", "jpg", "svg" ],
     "action_commands" : {
 	"build" : [

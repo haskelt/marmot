@@ -4,6 +4,5 @@
 SCRIPT_DIR=`dirname "$0"`
 BASE_DIR=`dirname "$SCRIPT_DIR"`
 export PYTHONPATH=$BASE_DIR
-echo $PYTHONPATH
 python -m salal $@
 

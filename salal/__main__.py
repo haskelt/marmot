@@ -1,5 +1,4 @@
-from salal.salallib import config, file_processing, actions
-print(__name__)
+from salal.core import config, file_processing, actions
 config.initialize()
 file_processing.initialize()
 actions.initialize()
