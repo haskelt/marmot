@@ -71,7 +71,7 @@ class Build:
         # the theme version of the file.
         file_types_to_copy = {'css': 'css', 'js': 'js', 'py': 'py'}
         module_dirs = [os.path.join(config.system['paths']['design_root'], config.system['paths']['module_dir'])]
-        if 'theme_root' in config.system:
+        if 'theme_root' in config.system['paths']:
             module_dirs.insert(0, os.path.join(config.system['paths']['theme_root'], config.system['paths']['module_dir']))
         for module_dir in module_dirs:
             # Check if the module directory exists before processing it

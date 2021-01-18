@@ -19,21 +19,21 @@
 	],
 	"deploy" : [
 	    { "type": "external",
-	      "command": "rsync -e \"/usr/bin/ssh\" -av --exclude=/.well-known/ --delete {{profile_build_dir}}/ {{deploy_destination}}"
+	      "command": "rsync -e \"/usr/bin/ssh\" -av --exclude=/.well-known/ --delete {{paths.profile_build_dir}}/ {{deploy_destination}}"
 	    }
 	],
 	"tidy" : [
 	    { "type": "external", "command": "rm -f *~" },
 	    { "type": "external", "command": "rm -f content/*~ content/*/*~ content/*/*/*~ content/*/*/*/*~"},
 	    { "type": "external", "command": "rm -f design/templates/*~"},
-	    { "type": "external", "command": "rm -f local/css/*~"},
-	    { "type": "external", "command": "rm -f local/js/*~"},
-	    { "type": "external", "command": "rm -f local/py/*~"},
-	    { "type": "external", "command": "rm -f local/modules/*/*~"},
+	    { "type": "external", "command": "rm -f design/resources/css/*~"},
+	    { "type": "external", "command": "rm -f design/resources/js/*~ design/resources/js/*/*~"},
+	    { "type": "external", "command": "rm -f design/resources/py/*~ design/resources/py/*/*~"},
+	    { "type": "external", "command": "rm -f design/modules/*/*~"},
 	    { "type": "external", "command": "rm -f config/*~"}
 	],
 	"nuke" : [
-	    { "type": "external", "command": "rm -fr {{profile_build_dir}}"}
+	    { "type": "external", "command": "rm -fr {{paths.profile_build_dir}}"}
 	]
     }
 }
