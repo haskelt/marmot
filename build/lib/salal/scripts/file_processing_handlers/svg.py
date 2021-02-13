@@ -4,9 +4,9 @@
 # provided with the corresponding tag.
 import os.path
 from lxml import etree as ET
-from salal.salallib.log import log
-from salal.salallib.config import config
-from salal.salallib.utilities import utilities
+from salal.core.log import log
+from salal.core.config import config
+from salal.core.utilities import utilities
 
 class SVGHandler:
 

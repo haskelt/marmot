@@ -1,0 +1,10 @@
+<page title="Index">
+  <p>
+    This is a site dedicated to birds that are frequently encountered in the Pacific Northwest. Click on one of the bird names to learn more about that bird.
+  </p>
+  <index-list>
+    <index-item path="/barred-owl/index.html" label="Barred Owl"/>
+    <index-item path="/northern-flicker/index.html" label="Northern Flicker"/>
+    <index-item path="/stellers-jay/index.html" label="Steller's Jay"/>
+  </index-list>
+</page>

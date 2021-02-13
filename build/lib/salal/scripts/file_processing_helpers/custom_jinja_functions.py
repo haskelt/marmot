@@ -3,12 +3,12 @@ import os.path
 import glob
 import re
 import xml.etree.ElementTree as ET
-from salal.salallib.config import config
+from salal.core.config import config
 
 #------------------------------------------------------------------------------
 
 def load_config(source):
-    with open(os.path.join(config.system['config_root'], source + '.json')) as config_file_fh:
+    with open(os.path.join(config.system['paths']['config_root'], source + '.json')) as config_file_fh:
         variables = json.load(config_file_fh)
         return variables
 
@@ -17,9 +17,9 @@ def load_config(source):
 def page_attributes(page_id):
     # we use 'home' instead of a blank id 
     if page_id == 'home':
-        page_path = os.path.join(config.system['content_root'], 'index.xml')
+        page_path = os.path.join(config.system['paths']['content_root'], 'index.xml')
     else:
-        matching_pages = glob.glob(config.system['content_root'] + '/**/' + page_id + '/index.xml', recursive=True)
+        matching_pages = glob.glob(config.system['paths']['content_root'] + '/**/' + page_id + '/index.xml', recursive=True)
         if len(matching_pages) > 1:
             raise ValueError('Non-unique page ID "' + page_id + '"')
         elif len(matching_pages) == 0:

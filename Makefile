@@ -1,4 +1,4 @@
 clean:
 	rm -f *~
 	rm -f bin/*~
-	rm -f salal/*~ salal/core/*~ salal/scripts/*~
+	rm -f salal/*~ salal/core/*~ salal/scripts/*~ salal/scripts/*/*~

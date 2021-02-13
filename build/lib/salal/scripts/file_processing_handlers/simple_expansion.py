@@ -9,7 +9,6 @@ import os.path
 import jinja2
 from salal.core.log import log
 from salal.core.config import config
-from salal.core.utilities import utilities
 
 class SimpleExpansion:
     

@@ -22,9 +22,9 @@ class XMLHandler:
 
     @classmethod
     def configure_modules (cls, node, env):
-        module_dirs = [os.path.join(config.system['design_root'], config.system['module_dir'])]
-        if 'theme_root' in config.system:
-            module_dirs.append(os.path.join(config.system['theme_root'], config.system['module_dir']))
+        module_dirs = [os.path.join(config.system['paths']['design_root'], config.system['paths']['module_dir'])]
+        if 'theme_root' in config.system['paths']:
+            module_dirs.append(os.path.join(config.system['paths']['theme_root'], config.system['paths']['module_dir']))
         for module in node.attrib['modules'].split():
             # try to locate the module directory
             module_location = None
@@ -118,9 +118,9 @@ class XMLHandler:
         # Configure the directories to be searched for templates. We
         # add the theme template dir after the local one, so a local
         # template will be found first if there is one
-        template_dirs = [os.path.join(config.system['design_root'], config.system['template_dir'])] 
-        if 'theme_root' in config.system:
-            template_dirs.append(os.path.join(config.system['theme_root'], config.system['template_dir']))
+        template_dirs = [os.path.join(config.system['paths']['design_root'], config.system['paths']['template_dir'])] 
+        if 'theme_root' in config.system['paths']:
+            template_dirs.append(os.path.join(config.system['paths']['theme_root'], config.system['paths']['template_dir']))
         # Initialize Jinja
         env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dirs), trim_blocks = True, lstrip_blocks = True)
         # If there is a modules attribute on the root, configure modules

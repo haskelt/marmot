@@ -18,11 +18,11 @@ class Build:
     def process_content (cls):
         for file_type in config.system['content_file_types']:
             log.message('TRACE', 'Looking for ' + file_type + 'files')
-            for file_relative_path in utilities.find_files_by_extension(config.system['content_root'], file_type):
+            for file_relative_path in utilities.find_files_by_extension(config.system['paths']['content_root'], file_type):
                 # create the target directory if it doesn't exist
-                os.makedirs(os.path.join(config.system['profile_build_dir'], os.path.dirname(file_relative_path)), exist_ok = True)
-                log.message('INFO', os.path.join(config.system['content_root'], file_relative_path))
-                file_processing.process(config.system['content_root'], config.system['profile_build_dir'], file_relative_path)
+                os.makedirs(os.path.join(config.system['paths']['profile_build_dir'], os.path.dirname(file_relative_path)), exist_ok = True)
+                log.message('INFO', os.path.join(config.system['paths']['content_root'], file_relative_path))
+                file_processing.process(config.system['paths']['content_root'], config.system['paths']['profile_build_dir'], file_relative_path)
 
     #---------------------------------------------------------------------------
 
@@ -40,9 +40,9 @@ class Build:
         # Theme files get processed first, so they can be overridden
         # by local files. This is accomplished simply by overwriting
         # the theme version of the file.
-        resource_dirs = [os.path.join(config.system['design_root'], config.system['resource_dir'])]
-        if 'theme_root' in config.system:
-            resource_dirs.insert(0, os.path.join(config.system['theme_root'], config.system['resource_dir']))
+        resource_dirs = [os.path.join(config.system['paths']['design_root'], config.system['paths']['resource_dir'])]
+        if 'theme_root' in config.system['paths']:
+            resource_dirs.insert(0, os.path.join(config.system['paths']['theme_root'], config.system['paths']['resource_dir']))
         for resource_dir in resource_dirs:
             # Check if the resource directory exists before processing it
             if not os.path.isdir(resource_dir):
@@ -51,9 +51,9 @@ class Build:
             resource_files = utilities.find_files(resource_dir)
             for file_relative_path in resource_files:
                 # create the target directory if it doesn't exist
-                os.makedirs(os.path.join(config.system['profile_build_dir'], os.path.dirname(file_relative_path)), exist_ok = True)
+                os.makedirs(os.path.join(config.system['paths']['profile_build_dir'], os.path.dirname(file_relative_path)), exist_ok = True)
                 log.message('INFO', os.path.join(resource_dir, file_relative_path))
-                file_processing.process(resource_dir, config.system['profile_build_dir'], file_relative_path)
+                file_processing.process(resource_dir, config.system['paths']['profile_build_dir'], file_relative_path)
 
     #---------------------------------------------------------------------------
 
@@ -70,9 +70,9 @@ class Build:
         # by local files. This is accomplished simply by overwriting
         # the theme version of the file.
         file_types_to_copy = {'css': 'css', 'js': 'js', 'py': 'py'}
-        module_dirs = [os.path.join(config.system['design_root'], config.system['module_dir'])]
-        if 'theme_root' in config.system:
-            module_dirs.insert(0, os.path.join(config.system['theme_root'], config.system['module_dir']))
+        module_dirs = [os.path.join(config.system['paths']['design_root'], config.system['paths']['module_dir'])]
+        if 'theme_root' in config.system['paths']:
+            module_dirs.insert(0, os.path.join(config.system['paths']['theme_root'], config.system['paths']['module_dir']))
         for module_dir in module_dirs:
             # Check if the module directory exists before processing it
             if not os.path.isdir(module_dir):
@@ -84,7 +84,7 @@ class Build:
                 for file_type in file_types_to_copy:
                     log.message('TRACE', 'Looking for ' + file_type + 'files in ' + module_subdir)
                     source_dir = os.path.join(module_dir, module_subdir)
-                    target_dir = os.path.join(config.system['profile_build_dir'], file_type, module_subdir)
+                    target_dir = os.path.join(config.system['paths']['profile_build_dir'], file_type, module_subdir)
                     module_files = utilities.find_files_by_extension(source_dir, file_type)
                     for module_file in module_files:
                         log.message('INFO', os.path.join(source_dir, module_file))

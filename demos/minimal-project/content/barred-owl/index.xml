@@ -1,0 +1,8 @@
+<page title="Barred Owl">
+  <bird-heading>Barred Owl</bird-heading>
+  <bird-details
+      latin_name="Strix varia"
+      habitat="Forests"
+      wingspan="99-110cm"
+      />
+</page>
