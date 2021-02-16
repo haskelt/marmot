@@ -51,7 +51,10 @@ class Utilities:
         if directory[-1] != os.sep:
             directory += os.sep
         result_list = []
-        for absolute_path in glob.glob(directory + '**/*', recursive = True):
+        # we need to look for files beginning with . specifically, as they
+        # don't match * by default
+        absolute_paths = glob.glob(directory + '**/*', recursive = True) + glob.glob(directory + '**/.*', recursive = True)
+        for absolute_path in absolute_paths:
             if os.path.isfile(absolute_path):
                 relative_path = re.match('^' + directory + '(.*)$', absolute_path).group(1)
                 result_list.append(relative_path)

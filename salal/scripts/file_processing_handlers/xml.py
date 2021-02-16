@@ -54,6 +54,20 @@ class XMLHandler:
     @classmethod
     def render_node (cls, node, env, variables):
 
+        # A tage name beginning with _ indicates a preprocessor directive, i.e.,
+        # something needs to be done with the node before further processing
+        if node.tag.startswith('_'):
+            if node.tag == '_include':
+                if 'file' in node.attrib:
+                    include_tree = ET.parse(node.attrib['file'])
+                    include_root = include_tree.getroot()
+                    for child in include_root:
+                        node.append(child)
+                else:
+                    raise ValueError('_include directive requires a file attribute')
+            else:
+                raise ValueError('Unrecognized preprocessor directive ' + node.tag)
+        
         # Because of how XML files get parsed, if a node has both
         # children and non-empty text content, we can't guarantee the
         # relative order of them will be preserved in the output. So
@@ -92,7 +106,10 @@ class XMLHandler:
             render_variables['this'].update(node.attrib)
 
         # Load the template for this node
-        template = env.get_template(node.tag + '.html')
+        if node.tag.startswith('_'):
+            template = env.from_string('{{ this.content }}')
+        else:
+            template = env.get_template(node.tag + '.html')
 
         # Render the node and return the result
         return template.render(render_variables)
