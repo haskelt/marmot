@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="salal",
-    version="0.10.1-alpha",
+    version="0.11.0-beta",
     author="Todd Haskell",
     author_email="todd@craggypeak.com",
     description="A system for building websites from templates and content",
@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/haskelt/salal",
     license="GNU General Public License v3",
-    packages=['salal'],
+    packages=setuptools.find_packages(),
     package_data={'': ['system.json']},
     include_package_data=True,
     classifiers=[

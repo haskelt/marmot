@@ -8,9 +8,9 @@
 	"module_dir": "modules/",
 	"build_root": "build/",
 	"profiles_file": "config/profiles.json",
-	"script_root": "scripts",
-	"command_handlers_dir": "command_handlers",
-	"file_processing_handlers_dir": "file_processing_handlers"
+	"extensions_root": "extensions",
+	"command_handlers_dir": "commands",
+	"file_processing_handlers_dir": "file_processing"
     },
     "content_file_types": [ "xml", "png", "jpg", "svg" ],
     "action_commands" : {
