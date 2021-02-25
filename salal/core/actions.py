@@ -14,7 +14,7 @@ class Actions:
         if 'action_commands' not in config.system:
             log.message('ERROR', 'No actions are configured')
         log.message('DEBUG', 'Loading command handlers')
-        cls.handlers = handlers.load_handlers(os.path.join(config.system['paths']['extensions_root'], config.system['paths']['command_handlers_dir']))
+        cls.handlers = handlers.load_handlers(os.path.join(config.system['paths']['salal_root'], config.system['paths']['extensions_root'], config.system['paths']['command_handlers_dir']))
 
     #---------------------------------------------------------------------------
 

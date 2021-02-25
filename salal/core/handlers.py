@@ -1,10 +1,20 @@
 import os
+import sys
 import importlib
 from salal.core.log import log
 from salal.core.config import config
 
 class Handlers:
 
+    #---------------------------------------------------------------------------
+    @classmethod
+    def load_module_source (cls, name, path):
+        spec = importlib.util.spec_from_file_location(name, path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+        return module
+    
     #---------------------------------------------------------------------------
 
     @classmethod
@@ -25,7 +35,7 @@ class Handlers:
         # to the code that calls the <load_handler> method.
 
         handlers = dict()
-        with os.scandir(os.path.join(config.system['paths']['salal_root'], directory)) as entries:
+        with os.scandir(os.path.join(directory)) as entries:
             for entry in entries:
                 if entry.is_dir() and not entry.name.startswith('__'):
                     handler_relative_path = os.path.join(directory, entry.name, 'handler.py')
@@ -34,8 +44,11 @@ class Handlers:
                         log.message('WARN', 'Handler directory ' + entry.name + ' does not contain a handler.py file')
                     else:
                         package_specifier = os.path.normpath(os.path.join('salal', handler_relative_path)).replace(os.sep, '.').replace('.py', '')
+                        print(entry.name)
+                        print(handler_full_path)
                         log.message('TRACE', 'Loading handler from ' + package_specifier)
-                        handler_module = importlib.import_module(package_specifier)
+                        #                        handler_module = importlib.import_module(package_specifier)
+                        handler_module = cls.load_module_source(entry.name, handler_full_path)
                         for tag in handler_module.handler.get_tags():
                             log.message('TRACE', tag)
                             handlers[tag] = handler_module.handler
