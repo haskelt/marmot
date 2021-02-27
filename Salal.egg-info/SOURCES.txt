@@ -14,17 +14,3 @@ salal/core/file_processing.py
 salal/core/handlers.py
 salal/core/log.py
 salal/core/utilities.py
-salal/extensions/__init__.py
-salal/extensions/commands/__init__.py
-salal/extensions/commands/build/__init__.py
-salal/extensions/commands/build/handler.py
-salal/extensions/file_processing/__init__.py
-salal/extensions/file_processing/copying/__init__.py
-salal/extensions/file_processing/copying/handler.py
-salal/extensions/file_processing/simple_expansion/__init__.py
-salal/extensions/file_processing/simple_expansion/handler.py
-salal/extensions/file_processing/svg/__init__.py
-salal/extensions/file_processing/svg/handler.py
-salal/extensions/file_processing/xml/__init__.py
-salal/extensions/file_processing/xml/custom_jinja_functions.py
-salal/extensions/file_processing/xml/handler.py

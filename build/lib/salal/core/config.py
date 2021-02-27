@@ -19,11 +19,13 @@ class Config:
     @classmethod
     def initialize (cls):
         cls.set_salal_root()
-        cls.parse_arguments ()
-        cls.load_system_configuration ()
-        cls.load_build_profiles ()
-        cls.initialize_variables ()
-    
+        cls.parse_arguments()
+        cls.load_system_configuration()
+        cls.load_build_profiles()
+        cls.initialize_variables()
+        cls.initialize_variables()
+        cls.set_extension_directories()
+        
     #---------------------------------------------------------------------------
  
     @classmethod
@@ -65,6 +67,7 @@ class Config:
             cls._build_profiles = json.load(build_profiles_fh)
         
     #---------------------------------------------------------------------------
+
     @classmethod
     def initialize_variables (cls):
         log.message('DEBUG', 'Using salal root directory of ' + cls.system['paths']['salal_root'])
@@ -94,9 +97,45 @@ class Config:
                 utilities.deep_update(profile_vars[var_type], cls._build_profiles['common'][var_type])
             if var_type in cls._build_profiles[cls.profile]:
                 utilities.deep_update(profile_vars[var_type], cls._build_profiles[cls.profile][var_type])
-        if 'theme_root' in config.system:
-            log.message('INFO', 'Using theme ' + config.system['theme_root'])
+        if 'theme_root' in config.system['paths']:
+            log.message('INFO', 'Using theme ' + config.system['paths']['theme_root'])
                 
     #---------------------------------------------------------------------------
 
+    @classmethod
+    def load_module (cls, path):
+
+
+        spec = importlib.util.find_spec(path)
+        print('Loader:', spec.loader)
+
+        m = spec.loader.load_module()
+        print('Module:', m)
+
+    #---------------------------------------------------------------------------
+
+    @classmethod
+    def set_extension_directories (cls):
+        # Extensions can be located in three places: The base Salal
+        # directory, the theme directory, or the <design> directory
+        # for the project. In each case, any extensions need to be
+        # placed in an <extensions> directory in that location. Here
+        # we check for the existence of these <extensions> directories,
+        # and set the system path <extension_dirs> to a list of those that
+        # are found.
+        extension_locations = [
+            cls.system['paths']['salal_root'],
+            cls.system['paths']['theme_root'] if 'theme_root' in config.system['paths'] else None,
+            'design'
+        ]
+        config.system['paths']['extension_dirs'] = []
+        for location in extension_locations:
+            if location:
+                extension_dir = os.path.join(location, cls.system['paths']['extensions_root'])
+                if os.path.isdir(extension_dir):
+                    config.system['paths']['extension_dirs'].append(extension_dir)
+                    log.message('DEBUG', 'Registered extensions directory ' + extension_dir)
+        
+    #---------------------------------------------------------------------------
+    
 config = Config

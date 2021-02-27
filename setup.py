@@ -1,11 +1,16 @@
 import setuptools
+import glob
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+additional_files = list(map(lambda entry: entry.replace('salal/', ''), glob.glob('salal/extensions/**/*.py', recursive=True)))
+additional_files.append('system.json')
+print(additional_files)
+    
 setuptools.setup(
     name="salal",
-    version="0.11.0-beta",
+    version="0.12.0-beta",
     author="Todd Haskell",
     author_email="todd@craggypeak.com",
     description="A system for building websites from templates and content",
@@ -14,7 +19,7 @@ setuptools.setup(
     url="https://github.com/haskelt/salal",
     license="GNU General Public License v3",
     packages=setuptools.find_packages(),
-    package_data={'': ['system.json']},
+    package_data={'': additional_files},
     include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -25,7 +30,6 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        'Jinja2>=2.11.2',
-        'lxml>=4.1.0'
+        'Jinja2>=2.11.2'
     ]
 )
