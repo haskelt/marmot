@@ -10,8 +10,8 @@ class FileProcessing:
     @classmethod
     def initialize (cls):
         log.message('DEBUG', 'Loading file processing handlers')
-        cls.handlers = handlers.load_handlers(os.path.join(config.system['paths']['extensions_root'], config.system['paths']['file_processing_handlers_dir']))
-
+        cls.handlers = handlers.load_handlers(config.system['paths']['file_processing_handlers_dir'])
+        
     #---------------------------------------------------------------------------
 
     @classmethod

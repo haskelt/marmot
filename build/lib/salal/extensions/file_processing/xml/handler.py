@@ -5,7 +5,7 @@
 import os.path
 import re
 import jinja2
-from lxml import etree as ET
+import xml.etree.ElementTree as ET
 from salal.core.log import log
 from salal.core.config import config
 from . import custom_jinja_functions

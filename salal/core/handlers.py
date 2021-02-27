@@ -47,15 +47,9 @@ class Handlers:
                             else:
                                 package_specifier = os.path.normpath(handler_relative_path).replace(os.sep, '.').replace('.py', '')
                                 log.message('TRACE', 'Loading handler from ' + package_specifier)
-                                print('PATH SUMMARY')
-                                print(handler_full_path)
-                                print(package_specifier)
-                                print(extension_dir)
                                 sys.path.insert(0, extension_dir)
-                                print(sys.path)
                                 handler_module = importlib.import_module(package_specifier)
                                 sys.path.pop(0)
-                                #handler_module = cls.load_module_source(entry.name, handler_full_path)
                                 for tag in handler_module.handler.get_tags():
                                     log.message('TRACE', tag)
                                     handlers[tag] = handler_module.handler
