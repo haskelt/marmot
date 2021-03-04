@@ -68,31 +68,24 @@ class XMLHandler:
             else:
                 raise ValueError('Unrecognized preprocessor directive ' + node.tag)
         
-        # Because of how XML files get parsed, if a node has both
-        # children and non-empty text content, we can't guarantee the
-        # relative order of them will be preserved in the output. So
-        # we check for this and abort if it is encountered.
-        if len(node) > 0 and node.text and node.text.strip():
-            log.message('ERROR', 'XML nodes with both text and children are not permitted')
-
-        ## Three scenarios for how to set the text content of this node:
-    
-        # If the node just has text content, expand variables in that
-        # content, and use the result as the node's text.
+        # If the node has text content, expand variables in that
+        # content, and use the result as the node's text. Otherwise,
+        # set the text content to the empty string.
         if node.text and node.text.strip():
             content_template = env.from_string(node.text.strip())
             node.text = content_template.render(variables)
+        else:
+            node.text = ''
+            
         # If the node has children, call this method recursively on
         # each child. Concatenate the results from those calls, and
-        # use that as the node's text.
-        elif len(node) > 0:
-            node.text = ''
+        # append them to the node's text.
+        if len(node) > 0:
             for child in node:
                 node.text += cls.render_node(child, env, variables) + '\n'
-        # If the node doesn't have children or non-empty content, set
-        # the node's text to the empty string.
-        else:
-            node.text = ''    
+                if child.tail:
+                    content_template = env.from_string(child.tail.strip())
+                    node.text += content_template.render(variables)
 
         # Initialize the variables that will be passed to Jinja for rendering
         # the node. We start with whatever variables were passed in, and
