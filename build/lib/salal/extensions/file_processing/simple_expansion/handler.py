@@ -16,7 +16,7 @@ class SimpleExpansion:
 
     @classmethod
     def get_tags (cls):
-        return ['js', 'css', 'htaccess']
+        return ['js', 'css', 'py', 'htaccess']
     
     #---------------------------------------------------------------------------
 

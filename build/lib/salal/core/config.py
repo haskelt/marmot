@@ -23,7 +23,6 @@ class Config:
         cls.load_system_configuration()
         cls.load_build_profiles()
         cls.initialize_variables()
-        cls.initialize_variables()
         cls.set_extension_directories()
         
     #---------------------------------------------------------------------------
@@ -99,6 +98,39 @@ class Config:
                 utilities.deep_update(profile_vars[var_type], cls._build_profiles[cls.profile][var_type])
         if 'theme_root' in config.system['paths']:
             log.message('INFO', 'Using theme ' + config.system['paths']['theme_root'])
+                
+    #---------------------------------------------------------------------------
+    @classmethod
+    def configure_search_path (cls):
+        log.message('DEBUG', 'Using salal root directory of ' + cls.system['paths']['salal_root'])
+        # convert the profile specifier to the correct profile name
+        if cls._arguments.profile == 'default':
+            cls.profile = None
+            for build_profile in cls._build_profiles:
+                if build_profile == 'common':
+                    continue
+                else:
+                    cls.profile = build_profile
+                    break
+            if cls.profile == None:
+                log.message('ERROR', 'Default profile specified, but there are no profiles configured')
+        elif cls._arguments.profile in cls._build_profiles:
+            cls.profile = cls._arguments.profile
+        else:
+            log.message('ERROR', 'Specified profile ' + cls._arguments.profile + ' does not exist')
+        log.message('INFO', 'Using profile ' + cls.profile)
+        cls.system['paths']['profile_build_dir'] = os.path.join(cls.system['paths']['build_root'], cls.profile)
+        
+        log.message('DEBUG', 'Initializing system and project variables')
+        cls.project = dict()
+        profile_vars = { 'system': cls.system, 'project': cls.project }
+        for var_type in ['system', 'project']:
+            if 'common' in cls._build_profiles and var_type in cls._build_profiles['common']:
+                utilities.deep_update(profile_vars[var_type], cls._build_profiles['common'][var_type])
+            if var_type in cls._build_profiles[cls.profile]:
+                utilities.deep_update(profile_vars[var_type], cls._build_profiles[cls.profile][var_type])
+        if 'theme_root' in config.system:
+            log.message('INFO', 'Using theme ' + config.system['theme_root'])
                 
     #---------------------------------------------------------------------------
 

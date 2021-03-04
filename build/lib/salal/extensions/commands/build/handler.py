@@ -27,6 +27,33 @@ class Build:
     #---------------------------------------------------------------------------
 
     @classmethod
+    def configure_search_dirs (cls, dir_type):
+        search_dirs = []
+        # check for the appropriate type of directory within the project
+        project_search_dir = os.path.join(config.system['paths']['design_root'], config.system['paths'][dir_type + '_dir'])
+        if os.path.isdir(project_search_dir):
+            search_dirs.insert(0, project_search_dir)
+        # check for the appropriate type of directory within the theme
+        # directory, if a theme is defined
+        if 'theme_root' in config.system['paths']:
+            theme_search_dir = os.path.join(config.system['paths']['theme_root'], config.system['paths'][dir_type + '_dir'])
+            if os.path.isdir(theme_search_dir):
+                search_dirs.insert(0, theme_search_dir)
+        return search_dirs
+                
+    #---------------------------------------------------------------------------
+    
+    @classmethod
+    def process_files (cls, file_path_list, source_dir, target_dir):
+        for file_path in file_path_list:
+            # create the target directory if it doesn't exist
+            os.makedirs(os.path.join(target_dir, os.path.dirname(file_path)), exist_ok = True)
+            log.message('INFO', os.path.join(source_dir, file_path))
+            file_processing.process(source_dir, target_dir, file_path)
+
+    #---------------------------------------------------------------------------
+    
+    @classmethod
     def process_resources (cls):
         # Copy all the files in the resources directory to the build
         # directory, processing them according to the appropriate
@@ -40,20 +67,11 @@ class Build:
         # Theme files get processed first, so they can be overridden
         # by local files. This is accomplished simply by overwriting
         # the theme version of the file.
-        resource_dirs = [os.path.join(config.system['paths']['design_root'], config.system['paths']['resource_dir'])]
-        if 'theme_root' in config.system['paths']:
-            resource_dirs.insert(0, os.path.join(config.system['paths']['theme_root'], config.system['paths']['resource_dir']))
+        resource_dirs = cls.configure_search_dirs('resource')
         for resource_dir in resource_dirs:
-            # Check if the resource directory exists before processing it
-            if not os.path.isdir(resource_dir):
-                continue
             log.message('DEBUG', 'Processing resources from ' + resource_dir)
             resource_files = utilities.find_files(resource_dir)
-            for file_relative_path in resource_files:
-                # create the target directory if it doesn't exist
-                os.makedirs(os.path.join(config.system['paths']['profile_build_dir'], os.path.dirname(file_relative_path)), exist_ok = True)
-                log.message('INFO', os.path.join(resource_dir, file_relative_path))
-                file_processing.process(resource_dir, config.system['paths']['profile_build_dir'], file_relative_path)
+            cls.process_files(resource_files, resource_dir, config.system['paths']['profile_build_dir'])
 
     #---------------------------------------------------------------------------
 
@@ -62,21 +80,17 @@ class Build:
         # Copy module files to the build directory, processing them
         # according to the appropriate file processing handler.
         #
-        # The destination directory that is used depends on the system
-        # variable <module_mappings>, which is used to set an appropriate
-        # destination based on module name and/or file extension.
+        # The destination directory is determined based on the file
+        # type and module name. So, a file within the modules
+        # directory called 'foo/foo.css' will end up as
+        # 'css/foo/foo.css' in the build directory.
         #
         # Theme files get processed first, so they can be overridden
         # by local files. This is accomplished simply by overwriting
         # the theme version of the file.
-        file_types_to_copy = {'css': 'css', 'js': 'js', 'py': 'py'}
-        module_dirs = [os.path.join(config.system['paths']['design_root'], config.system['paths']['module_dir'])]
-        if 'theme_root' in config.system['paths']:
-            module_dirs.insert(0, os.path.join(config.system['paths']['theme_root'], config.system['paths']['module_dir']))
+        file_types_to_copy = ['css', 'js', 'py']
+        module_dirs = cls.configure_search_dirs('module')
         for module_dir in module_dirs:
-            # Check if the module directory exists before processing it
-            if not os.path.isdir(module_dir):
-                continue
             log.message('DEBUG', 'Processing modules from ' + module_dir)
             module_subdirs = utilities.find_subdirectories(module_dir)
             for module_subdir in module_subdirs:
@@ -86,11 +100,7 @@ class Build:
                     source_dir = os.path.join(module_dir, module_subdir)
                     target_dir = os.path.join(config.system['paths']['profile_build_dir'], file_type, module_subdir)
                     module_files = utilities.find_files_by_extension(source_dir, file_type)
-                    for module_file in module_files:
-                        log.message('INFO', os.path.join(source_dir, module_file))
-                        # create the target directory if it doesn't exist
-                        os.makedirs(target_dir, exist_ok = True)
-                        file_processing.process(source_dir, target_dir, module_file)
+                    cls.process_files(module_files, source_dir, target_dir)
         
     #---------------------------------------------------------------------------
 
