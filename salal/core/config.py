@@ -23,7 +23,6 @@ class Config:
         cls.load_system_configuration()
         cls.load_build_profiles()
         cls.initialize_variables()
-        cls.initialize_variables()
         cls.set_extension_directories()
         
     #---------------------------------------------------------------------------
