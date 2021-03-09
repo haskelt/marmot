@@ -45,36 +45,8 @@ def page_attributes(page_id):
     
 #------------------------------------------------------------------------------
 
-def emphasize(text):
-    return '<em>' + text + '</em>'
-
-#------------------------------------------------------------------------------
-
-def bold(text):
-    return '<b>' + text + '</b>'
-
-#------------------------------------------------------------------------------
-
-def inline_link(url, text, destination="external"):
-    if destination == "external":
-        anchor = '<a href="' + url + '" target="_blank">' + text + '</a>'
-    else:
-        anchor = '<a href="' + url + '">' + text + '</a>'
-    return anchor
-
-#------------------------------------------------------------------------------
-
-def literal_tag(tag):
-    return '<![CDATA[&lt;' + tag + '&gt;]]>'
-
-#------------------------------------------------------------------------------
-
 def register_functions(env):
     env.globals['load_config'] = load_config
     env.globals['page_attributes'] = page_attributes
-    env.globals['emphasize'] = emphasize
-    env.globals['bold'] = bold
-    env.globals['inline_link'] = inline_link
-    env.globals['literal_tag'] = literal_tag
     
 #------------------------------------------------------------------------------
