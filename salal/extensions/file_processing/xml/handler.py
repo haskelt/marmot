@@ -71,8 +71,8 @@ class XMLHandler:
         # If the node has text content, expand variables in that
         # content, and use the result as the node's text. Otherwise,
         # set the text content to the empty string.
-        if node.text and node.text.strip():
-            content_template = env.from_string(node.text.strip())
+        if node.text:
+            content_template = env.from_string(node.text)
             node.text = content_template.render(variables)
         else:
             node.text = ''
@@ -82,9 +82,9 @@ class XMLHandler:
         # append them to the node's text.
         if len(node) > 0:
             for child in node:
-                node.text += cls.render_node(child, env, variables) + '\n'
+                node.text += cls.render_node(child, env, variables)
                 if child.tail:
-                    content_template = env.from_string(child.tail.strip())
+                    content_template = env.from_string(child.tail)
                     node.text += content_template.render(variables)
 
         # Initialize the variables that will be passed to Jinja for rendering
@@ -100,7 +100,7 @@ class XMLHandler:
 
         # Load the template for this node
         if node.tag.startswith('_'):
-            template = env.from_string('{{ this.content }}')
+            template = env.from_string('{{this.content}}')
         else:
             template = env.get_template(node.tag + '.html')
 
@@ -132,7 +132,8 @@ class XMLHandler:
         if 'theme_root' in config.system['paths']:
             template_dirs.append(os.path.join(config.system['paths']['theme_root'], config.system['paths']['template_dir']))
         # Initialize Jinja
-        env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dirs), trim_blocks = True, lstrip_blocks = True)
+        #env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dirs), trim_blocks = True, lstrip_blocks = True)
+        env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dirs))
         # If there is a modules attribute on the root, configure modules
         if 'modules' in xml_root.attrib:
             log.message('TRACE', 'Configuring modules for ' + file_stem)
