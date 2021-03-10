@@ -3,6 +3,7 @@ from salal.core.log import log
 from salal.core.config import config
 from salal.core.utilities import utilities 
 from salal.core.file_processing import file_processing
+from .dependencies import DependencyManager as dependency_manager
 
 class Build:
     
@@ -106,10 +107,12 @@ class Build:
 
     @classmethod
     def execute (cls, tag):
-        
+
+        dependency_manager.read_log()
         cls.process_content()
         cls.process_resources()
-        cls.process_modules() 
+        cls.process_modules()
+        dependency_manager.write_log()
 
     #---------------------------------------------------------------------------
 
