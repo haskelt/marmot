@@ -21,6 +21,12 @@ class XMLHandler:
     #---------------------------------------------------------------------------
 
     @classmethod
+    def get_target_extension(cls, source_ext):
+        return 'html'
+    
+    #---------------------------------------------------------------------------
+    
+    @classmethod
     def configure_modules (cls, node, env):
         module_dirs = [os.path.join(config.system['paths']['design_root'], config.system['paths']['module_dir'])]
         if 'theme_root' in config.system['paths']:

@@ -11,12 +11,18 @@ from salal.core.log import log
 from salal.core.config import config
 
 class SimpleExpansion:
-    
+
     #---------------------------------------------------------------------------
 
     @classmethod
     def get_tags (cls):
         return ['js', 'css', 'py', 'htaccess']
+
+    #---------------------------------------------------------------------------
+
+    @classmethod
+    def get_target_extension(cls, source_ext):
+        return source_ext
     
     #---------------------------------------------------------------------------
 

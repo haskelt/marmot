@@ -2,6 +2,7 @@ import os
 from salal.core.log import log
 from salal.core.config import config
 from salal.core.handlers import handlers
+from .dependencies import dependencies
 
 class FileProcessing:
 
@@ -29,7 +30,15 @@ class FileProcessing:
         else:
             log.message('WARN', 'Handling for file type ' + ext + ' is not configured, skipping.')
             return
-        cls.handlers[tag].process(ext, source_dir, target_dir, file_stem)
+        target_ext = cls.handlers[tag].get_target_extension(ext)
+        # create the target directory if it doesn't exist
+        os.makedirs(os.path.join(target_dir, os.path.dirname(file_relative_path)), exist_ok = True)
+        source_file = os.path.join(source_dir, file_relative_path)
+        target_file = os.path.join(target_dir, file_stem + '.' + target_ext)
+        if dependencies.needs_build(target_file, source_file):
+            log.message('INFO', source_file)
+            cls.handlers[tag].process(ext, source_dir, target_dir, file_stem)
+            dependencies.queue_log_update(target_file, source_file)
 
     #---------------------------------------------------------------------------
 

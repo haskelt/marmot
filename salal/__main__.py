@@ -1,5 +1,4 @@
-from salal.core import config, file_processing, actions
+from salal.core import config, actions
 config.initialize()
-file_processing.initialize()
 actions.initialize()
 actions.execute(config.action)
