@@ -2,8 +2,8 @@ import os
 from salal.core.log import log
 from salal.core.config import config
 from salal.core.utilities import utilities 
-from .file_processing import file_processing
-from .dependencies import dependencies
+from salal.core.dependencies import dependencies
+from salal.core.file_processing import file_processing
 
 class Build:
     
@@ -13,15 +13,6 @@ class Build:
     def get_tags (cls):
         return ['build']
     
-    #---------------------------------------------------------------------------
-
-    @classmethod
-    def process_content (cls):
-        for file_type in config.system['content_file_types']:
-            log.message('TRACE', 'Looking for ' + file_type + 'files')
-            for file_relative_path in utilities.find_files_by_extension(config.system['paths']['content_root'], file_type):
-                file_processing.process(config.system['paths']['content_root'], config.system['paths']['profile_build_dir'], file_relative_path)
-
     #---------------------------------------------------------------------------
 
     @classmethod
@@ -48,6 +39,15 @@ class Build:
 
     #---------------------------------------------------------------------------
     
+    @classmethod
+    def process_content (cls):
+        log.message('DEBUG', 'Processing content files')
+        for file_type in config.system['content_file_types']:
+            log.message('TRACE', 'Looking for ' + file_type + 'files')
+            content_files = utilities.find_files_by_extension(config.system['paths']['content_root'], file_type)
+            cls.process_files(content_files, config.system['paths']['content_root'], config.system['paths']['profile_build_dir'])
+
+    #---------------------------------------------------------------------------
     @classmethod
     def process_resources (cls):
         # Copy all the files in the resources directory to the build
@@ -103,7 +103,7 @@ class Build:
     def execute (cls, tag):
 
         file_processing.initialize()
-        dependencies.read_log()
+        dependencies.initialize()
         cls.process_content()
         cls.process_resources()
         cls.process_modules()

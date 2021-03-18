@@ -5,12 +5,18 @@ import shutil
 from salal.core.log import log
 
 class Default:
-    
+
     #---------------------------------------------------------------------------
 
     @classmethod
     def get_tags (cls):
-        return ['copy', 'default']
+        return ['default']
+    
+    #---------------------------------------------------------------------------
+
+    @classmethod
+    def get_target_extension(cls, source_ext):
+        return source_ext
     
     #---------------------------------------------------------------------------
 

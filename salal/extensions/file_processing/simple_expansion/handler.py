@@ -9,6 +9,8 @@ import os.path
 import jinja2
 from salal.core.log import log
 from salal.core.config import config
+from salal.core.dependencies import dependencies
+from salal.core.variable_tracker import VariableTracker
 
 class SimpleExpansion:
 
@@ -31,7 +33,7 @@ class SimpleExpansion:
         log.message('TRACE', 'Doing simple expansion')
         env = jinja2.Environment(loader = jinja2.FileSystemLoader(source_dir))
         template = env.get_template(file_stem + '.' + tag)
-        output = template.render(config.project)
+        output = template.render({'project': VariableTracker(config.project, callback = dependencies.variable_used)})
         with open(os.path.join(target_dir, file_stem + '.' + tag), mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
             output_fh.write(output)
 

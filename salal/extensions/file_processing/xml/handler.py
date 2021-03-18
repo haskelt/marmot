@@ -8,6 +8,8 @@ import jinja2
 import xml.etree.ElementTree as ET
 from salal.core.log import log
 from salal.core.config import config
+from salal.core.dependencies import dependencies
+from salal.core.variable_tracker import VariableTracker
 from . import custom_jinja_functions
 
 class XMLHandler:
@@ -79,7 +81,7 @@ class XMLHandler:
         # set the text content to the empty string.
         if node.text:
             content_template = env.from_string(node.text)
-            node.text = content_template.render(variables)
+            node.text = content_template.render({'project': variables})
         else:
             node.text = ''
             
@@ -91,7 +93,7 @@ class XMLHandler:
                 node.text += cls.render_node(child, env, variables)
                 if child.tail:
                     content_template = env.from_string(child.tail)
-                    node.text += content_template.render(variables)
+                    node.text += content_template.render({'project': variables})
 
         # Initialize the variables that will be passed to Jinja for rendering
         # the node. We start with whatever variables were passed in, and
@@ -99,16 +101,17 @@ class XMLHandler:
         # to this node. Those include any attributes on the node, as well as
         # a special variable 'this.content' that contains the node text that
         # was set above.
-        render_variables = variables.copy()
-        render_variables['this'] = { 'content': node.text }
+        render_variables = {'project': variables}
+        render_variables['this'] = {'content': node.text} 
         if node.attrib:
             render_variables['this'].update(node.attrib)
-
+            
         # Load the template for this node
         if node.tag.startswith('_'):
             template = env.from_string('{{this.content}}')
         else:
             template = env.get_template(node.tag + '.html')
+            dependencies.template_used(template.filename)
 
         # Render the node and return the result
         return template.render(render_variables)
@@ -147,7 +150,7 @@ class XMLHandler:
         # Register Salal-specific Jinja functions
         custom_jinja_functions.register_functions(env)
         # Do template expansion on the source file
-        xml_root.text = cls.render_node(xml_root, env, config.project)
+        xml_root.text = cls.render_node(xml_root, env, VariableTracker(config.project, callback = dependencies.variable_used))
         # Write the expanded file to the target directory
         with open(os.path.join(target_dir, file_stem + '.html'), mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
             output_fh.write(xml_root.text)
