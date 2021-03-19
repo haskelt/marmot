@@ -41,7 +41,7 @@ class Build:
     
     @classmethod
     def process_content (cls):
-        log.message('DEBUG', 'Processing content files')
+        log.message('DEBUG', 'Processing content files from ' + config.system['paths']['content_root'])
         for file_type in config.system['content_file_types']:
             log.message('TRACE', 'Looking for ' + file_type + 'files')
             content_files = utilities.find_files_by_extension(config.system['paths']['content_root'], file_type)

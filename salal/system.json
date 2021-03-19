@@ -1,14 +1,14 @@
 {
     "paths" : {
-	"config_root": "config/",
-	"content_root": "content/",
-	"design_root": "design/",
-	"template_dir": "templates/",
-	"resource_dir": "resources/",
-	"module_dir": "modules/",
-	"build_root": "build/",
+	"config_root": "config",
+	"content_root": "content",
+	"design_root": "design",
+	"template_dir": "templates",
+	"resource_dir": "resources",
+	"module_dir": "modules",
+	"build_root": "build",
 	"profiles_file": "config/profiles.json",
-	"build_log_dir": "build_log/",
+	"build_log_dir": "build_log",
 	"extensions_root": "extensions",
 	"command_handlers_dir": "commands",
 	"file_processing_handlers_dir": "file_processing"

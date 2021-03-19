@@ -50,6 +50,9 @@ class Utilities:
         # add it if missing.
         if directory[-1] != os.sep:
             directory += os.sep
+        # To use the directory name in an RE, we need to replace any backslashes
+        # with double backslashes
+        re_directory = directory.replace('\\', '\\\\')
         result_list = []
         # we need to look for files beginning with . specifically, as they
         # don't match * by default
@@ -74,9 +77,12 @@ class Utilities:
         # add it if missing.
         if directory[-1] != os.sep:
             directory += os.sep
+        # To use the directory name in an RE, we need to replace any backslashes
+        # with double backslashes
+        re_directory = directory.replace('\\', '\\\\')
         result_list = []
         for absolute_path in glob.glob(directory + '**' + os.sep + '*.' + extension, recursive = True):
-            relative_path = re.match('^' + directory + '(.*)$', absolute_path).group(1)
+            relative_path = re.match('^' + re_directory + '(.*)$', absolute_path).group(1)
             result_list.append(relative_path)
         return result_list
 
