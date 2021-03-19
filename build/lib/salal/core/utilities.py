@@ -59,7 +59,7 @@ class Utilities:
         absolute_paths = glob.glob(directory + '**' + os.sep + '*', recursive = True) + glob.glob(directory + '**' + os.sep + '.*', recursive = True)
         for absolute_path in absolute_paths:
             if os.path.isfile(absolute_path):
-                relative_path = re.match('^' + directory + '(.*)$', absolute_path).group(1)
+                relative_path = re.match('^' + re_directory + '(.*)$', absolute_path).group(1)
                 result_list.append(relative_path)
         return result_list
 
