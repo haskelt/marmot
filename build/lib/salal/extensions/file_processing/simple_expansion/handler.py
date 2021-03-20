@@ -32,7 +32,9 @@ class SimpleExpansion:
     def process (cls, tag, source_dir, target_dir, file_stem):
         log.message('TRACE', 'Doing simple expansion')
         env = jinja2.Environment(loader = jinja2.FileSystemLoader(source_dir))
-        template = env.get_template(file_stem + '.' + tag)
+        # In Jinja, template paths aren't file system paths and always use
+        # forward slashes
+        template = env.get_template((file_stem + '.' + tag).replace('\\','/'))
         output = template.render({'project': VariableTracker(config.project, callback = dependencies.variable_used)})
         with open(os.path.join(target_dir, file_stem + '.' + tag), mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
             output_fh.write(output)

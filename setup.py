@@ -10,7 +10,7 @@ print(additional_files)
     
 setuptools.setup(
     name="salal",
-    version="0.16.2-beta",
+    version="0.16.3-beta",
     author="Todd Haskell",
     author_email="todd@craggypeak.com",
     description="A system for building websites from templates and content",
