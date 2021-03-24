@@ -35,7 +35,7 @@ class SimpleExpansion:
         # In Jinja, template paths aren't file system paths and always use
         # forward slashes regardless of the OS
         template = env.get_template((file_stem + '.' + tag).replace('\\','/'))
-        output = template.render({'project': VariableTracker(config.project, callback = dependencies.variable_used)})
+        output = template.render({'project': VariableTracker(config.project, success_callback = dependencies.variable_used, failure_callback = dependencies.variable_not_found)})
         with open(os.path.join(target_dir, file_stem + '.' + tag), mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
             output_fh.write(output)
 

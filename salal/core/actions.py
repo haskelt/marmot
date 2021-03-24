@@ -33,7 +33,7 @@ class Actions:
         if action not in config.system['action_commands']:
             log.message('ERROR', 'The action ' + action + ' is not configured')
         else:
-            log.message('INFO', 'Beginning ' + action + ' for ' + config.system['profile'] + ' profile')
+            log.message('INFO', 'Executing ' + action + ' action')
             
         # Iterates through the list of commands associated with 'tag',
         # does substitution for system variables, and passes them to

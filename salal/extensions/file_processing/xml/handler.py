@@ -150,7 +150,7 @@ class XMLHandler:
         # Register Salal-specific Jinja functions
         custom_jinja_functions.register_functions(env)
         # Do template expansion on the source file
-        xml_root.text = cls.render_node(xml_root, env, VariableTracker(config.project, callback = dependencies.variable_used))
+        xml_root.text = cls.render_node(xml_root, env, VariableTracker(config.project, success_callback = dependencies.variable_used, failure_callback = dependencies.variable_not_found))
         # Write the expanded file to the target directory
         with open(os.path.join(target_dir, file_stem + '.html'), mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
             output_fh.write(xml_root.text)

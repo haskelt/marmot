@@ -89,6 +89,23 @@ class Utilities:
     #---------------------------------------------------------------------------
 
     @classmethod
+    def find_empty_subdirectories (cls, directory, result_list = None):
+        # Recursively searches <directory> for any subdirectories that are
+        # empty, and returns a list of those subdirectories.
+        if result_list == None:
+            result_list = []
+        entry_count = 0
+        for entry in os.scandir(directory):
+            if entry.is_dir():
+                cls.find_empty_subdirectories(os.path.join(directory, entry.name), result_list)
+            entry_count += 1
+        if entry_count == 0:
+            result_list.append(directory)
+        return result_list
+
+    #---------------------------------------------------------------------------
+
+    @classmethod
     def substitute_variables (cls, string, variables):
         # Jinja-style variable substitution. Any instances within
         # <string> where {{<identifier>}} occurs are replaced by

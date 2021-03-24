@@ -1,7 +1,7 @@
 {
     "test": {
 	"project": {
-	    "SITE_TITLE": "PNW Birds"
+	    "site_title": "PNW Birds"
 	}
     }
 }

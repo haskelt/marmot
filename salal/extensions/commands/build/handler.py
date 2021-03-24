@@ -107,6 +107,7 @@ class Build:
         cls.process_content()
         cls.process_resources()
         cls.process_modules()
+        log.message('INFO', str(dependencies.num_files_checked()) + ' file(s) processed, ' + str(dependencies.num_files_built()) + ' file(s) built')
         dependencies.write_log()
 
     #---------------------------------------------------------------------------
