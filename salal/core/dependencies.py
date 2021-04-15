@@ -24,11 +24,13 @@ class DependencyManager:
             cls.file_log = build_log['files']
             cls.variable_log = build_log['variables']
             cls.template_log = set(build_log['templates'])
+            cls.resource_log = set(build_log['resources'])
         else:
             cls.last_build_time = datetime.min
             cls.file_log = dict()
             cls.variable_log = dict()
             cls.template_log = set()
+            cls.resource_log = set()
 
         # initialize utility variables
         cls.n_files_checked = 0
@@ -42,10 +44,12 @@ class DependencyManager:
         cls.file_updates = dict()
         cls.variable_updates = dict()
         cls.template_updates = set()
+        cls.resource_updates = set()
 
         cls.file_check_flags = {file_ref:False for file_ref in cls.file_log.keys()}
         cls.variable_change_flags = cls.check_for_variable_changes(cls.variable_log, cls.variable_updates)
-        cls.template_change_flags = cls.check_for_template_changes(cls.template_log)
+        cls.template_change_flags = cls.check_for_file_changes(cls.template_log, 'template')
+        cls.resource_change_flags = cls.check_for_file_changes(cls.resource_log, 'resource')
     
     #---------------------------------------------------------------------------
     # For each variable in the log, we create a flag to indicate
@@ -74,29 +78,29 @@ class DependencyManager:
                     
     #---------------------------------------------------------------------------
 
-    # For each template in the log, we create a flag to indicate
-    # whether the template has changed since the last build, which is
+    # For each file in the <file_list>, we create a flag to indicate
+    # whether the file has changed since the last build, which is
     # used to help determine when a source file should be rebuilt.
     @classmethod
-    def check_for_template_changes (cls, template_log):
-        template_change_flags = dict()
-        for template_file in template_log:
-            # It's not necessarily an error if a template from the
+    def check_for_file_changes (cls, file_list, file_type):
+        file_change_flags = dict()
+        for file_path in file_list:
+            # It's not necessarily an error if a file from the
             # last build doesn't exist any more, because references to
-            # that template may also have been removed. So we don't
+            # that file may also have been removed. So we don't
             # throw an error here, but we do warn trigger a rebuild of
-            # any source files that referenced the template.
-            if not os.path.isfile(template_file):
-                log.message('WARN', 'Template ' + template_file + ' is in the build log but no longer exists')
-                template_change_flags[template_file] = True
+            # any source files that referenced the file.
+            if not os.path.isfile(file_path):
+                log.message('WARN', file_type.capitalize() + ' ' + file_path + ' is in the build log but no longer exists')
+                file_change_flags[file_path] = True
             else:
-                template_mod_time = datetime.fromtimestamp(os.path.getmtime(template_file))
-                if template_mod_time > cls.last_build_time:
-                    log.message('TRACE', 'Detected change to template ' + template_file)
-                    template_change_flags[template_file] = True
+                file_mod_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+                if file_mod_time > cls.last_build_time:
+                    log.message('TRACE', 'Detected change to ' + file_type + ' ' + file_path)
+                    file_change_flags[file_path] = True
                 else:
-                    template_change_flags[template_file] = False
-        return template_change_flags
+                    file_change_flags[file_path] = False
+        return file_change_flags
                     
     #---------------------------------------------------------------------------
     
@@ -136,6 +140,12 @@ class DependencyManager:
                 log.message('TRACE', 'Template ' + template + ' used by target ' + target_file + ' has changed, build required')
                 return True
 
+        # Have any referenced resources been changed? If so, rebuild.
+        for resource in cls.file_log[target_key]['resources']:
+            if cls.resource_change_flags[resource]:
+                log.message('TRACE', 'Resource ' + resource + ' used by target ' + target_file + ' has changed, build required')
+                return True
+
         return False
 
     #---------------------------------------------------------------------------
@@ -149,10 +159,11 @@ class DependencyManager:
         if cls.cur_file_key not in cls.file_log:
             log.message('TRACE', 'Detected new build target ' + target_file + ', now tracking it')
         cls.file_updates[cls.cur_file_key] = {
-            "target": target_file,
-            "source": source_file,
-            "variables": [],
-            "templates": []
+            'target': target_file,
+            'source': source_file,
+            'variables': [],
+            'templates': [],
+            'resources': []
         }
     
     #---------------------------------------------------------------------------
@@ -182,6 +193,16 @@ class DependencyManager:
                 cls.template_updates.add(template_file) 
                 
     #---------------------------------------------------------------------------
+    
+    @classmethod
+    def resource_used (cls, resource_file):
+        if resource_file not in cls.file_updates[cls.cur_file_key]['resources']:
+            cls.file_updates[cls.cur_file_key]['resources'].append(resource_file)
+            if resource_file not in cls.resource_log and resource_file not in cls.resource_updates:
+                log.message('TRACE', 'Detected use of new resource ' + resource_file + ', now tracking it');
+                cls.resource_updates.add(resource_file) 
+                
+    #---------------------------------------------------------------------------
 
     @classmethod
     def stop_build_tracking (cls):
@@ -204,13 +225,28 @@ class DependencyManager:
     #---------------------------------------------------------------------------
     
     @classmethod
+    def remove_stale_references (cls, log, change_flags, reference_type):
+        active_references = set()
+        for file_entry in cls.file_log.values():
+            if reference_type + 's' in file_entry:
+                for reference_path in file_entry[reference_type + 's']:
+                    active_references.add(reference_path)
+        for reference_path in change_flags:
+            if reference_path not in active_references:
+                log.message('TRACE', reference_type.capitalize() + ' ' + reference_path + ' is no longer part of the build, discontinuing tracking');
+                log.remove(reference_path)
+                
+    #---------------------------------------------------------------------------
+    
+    @classmethod
     def write_log (cls):
         log.message('DEBUG', 'Updating build log')
         
-        # incorporate updates to the file, variable, and template logs
+        # incorporate updates to the file, variable, template, and resource logs
         cls.file_log.update(cls.file_updates)
         cls.variable_log.update(cls.variable_updates)
         cls.template_log.update(cls.template_updates)
+        cls.resource_log.update(cls.resource_updates)
 
         # remove entries for stale files (were in build log but no
         # longer part of the build)
@@ -239,23 +275,16 @@ class DependencyManager:
                 log.message('TRACE', 'Variable ' + variable + ' is no longer part of the build, discontinuing tracking'); 
                 cls.variable_log.pop(variable)
 
-        # remove templates from the log that aren't referenced by a
-        # file anymore
-        templates_referenced = set()
-        for file_entry in cls.file_log.values():
-            if 'templates' in file_entry:
-                for template in file_entry['templates']:
-                    templates_referenced.add(template)
-        for template in cls.template_change_flags:
-            if template not in templates_referenced:
-                log.message('TRACE', 'Template ' + template + ' is no longer part of the build, discontinuing tracking');
-                cls.template_log.remove(template)
+        # remove templates and resources from the log that aren't
+        # referenced by a file anymore
+        cls.remove_stale_references(cls.template_log, cls.template_change_flags, 'template')
+        cls.remove_stale_references(cls.resource_log, cls.resource_change_flags, 'resource')
 
         # create the build log directory if it doesn't exist
         os.makedirs(os.path.join(config.system['paths']['config_root'], config.system['paths']['build_log_dir']), exist_ok = True)
         # write the file
         with open(cls.build_log_file, 'w') as build_log_fh:
-            json.dump({'timestamp': cls.cur_build_time, 'files': cls.file_log, 'variables': cls.variable_log, 'templates': list(cls.template_log)}, build_log_fh, default=str)
+            json.dump({'timestamp': cls.cur_build_time, 'files': cls.file_log, 'variables': cls.variable_log, 'templates': list(cls.template_log), 'resources': list(cls.resource_log)}, build_log_fh, default=str)
         
     #---------------------------------------------------------------------------
     

@@ -4,11 +4,14 @@ import glob
 import re
 import xml.etree.ElementTree as ET
 from salal.core.config import config
+from salal.core.dependencies import dependencies
 
 #------------------------------------------------------------------------------
 
 def load_config(source):
-    with open(os.path.join(config.system['paths']['config_root'], source + '.json')) as config_file_fh:
+    config_file_path = os.path.join(config.system['paths']['config_root'], source + '.json')
+    with open(os.path.join(config_file_path)) as config_file_fh:
+        dependencies.resource_used(config_file_path)
         variables = json.load(config_file_fh)
         return variables
 
