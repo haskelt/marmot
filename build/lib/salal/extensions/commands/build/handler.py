@@ -1,4 +1,5 @@
 import os
+import re
 from salal.core.log import log
 from salal.core.config import config
 from salal.core.utilities import utilities 
@@ -41,11 +42,29 @@ class Build:
     
     @classmethod
     def process_content (cls):
-        log.message('DEBUG', 'Processing content files from ' + config.system['paths']['content_root'])
-        for file_type in config.system['content_file_types']:
-            log.message('TRACE', 'Looking for ' + file_type + 'files')
-            content_files = utilities.find_files_by_extension(config.system['paths']['content_root'], file_type)
-            cls.process_files(content_files, config.system['paths']['content_root'], config.system['paths']['profile_build_dir'])
+        content_dir = config.system['paths']['content_root']
+        log.message('DEBUG', 'Processing content files from ' + content_dir)
+        content_files = utilities.find_files(config.system['paths']['content_root'])
+        if 'content_whitelist' in config.system:
+            whitelist_pass_files = []
+            for content_file in content_files:
+                for pattern in config.system['content_whitelist']:
+                    if re.search(pattern, content_file) != None:
+                        whitelist_pass_files.append(content_file)
+                        break
+            content_files = whitelist_pass_files
+        if 'content_blacklist' in config.system:
+            blacklist_pass_files = []
+            for content_file in content_files:
+                passed_check = True
+                for pattern in config.system['content_blacklist']:
+                    if re.search(pattern, content_file) != None:
+                        passed_check = False
+                        break
+                if passed_check:
+                    blacklist_pass_files.append(content_file)
+            content_files = blacklist_pass_files
+        cls.process_files(content_files, content_dir, config.system['paths']['profile_build_dir'])
 
     #---------------------------------------------------------------------------
     @classmethod
