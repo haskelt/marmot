@@ -13,7 +13,6 @@
 	"command_handlers_dir": "commands",
 	"file_processing_handlers_dir": "file_processing"
     },
-    "content_file_types": [ "xml", "png", "jpg", "svg" ],
     "action_commands" : {
 	"build" : [
 	    { "type": "internal", "command": "build" }
