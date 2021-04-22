@@ -6,7 +6,7 @@ import os.path
 import re
 import jinja2
 import xml.etree.ElementTree as ET
-from salal.core.log import log
+from salal.core.logging import logging
 from salal.core.config import config
 from salal.core.dependencies import dependencies
 from salal.core.variable_tracker import VariableTracker
@@ -39,18 +39,18 @@ class XMLHandler:
             for module_dir in module_dirs:
                 module_subdir = os.path.join(module_dir, module)
                 if os.path.isdir(module_subdir):
-                    log.message('TRACE', 'Found module ' + module + ' in ' + module_dir)
+                    logging.message('TRACE', 'Found module ' + module + ' in ' + module_dir)
                     module_location = module_dir
                     env.loader.searchpath.append(module_subdir)
                     break
             else:
-                log.message('ERROR', 'Cannot find module ' + module)
+                logging.message('ERROR', 'Cannot find module ' + module)
 
             # if it exists, add module style sheet to the styles list
             for extension, attribute in [('css', 'styles'), ('js', 'scripts')]:
                 file_path =  os.path.join(module, module + '.' + extension)
                 if os.path.exists(os.path.join(module_location, file_path)):
-                    log.message('TRACE', 'Configuring ' + attribute + ' for module ' + module)
+                    logging.message('TRACE', 'Configuring ' + attribute + ' for module ' + module)
                     if attribute not in node.attrib:
                         node.attrib[attribute] = ''
                     else:
@@ -121,7 +121,7 @@ class XMLHandler:
     @classmethod
     def process (cls, tag, source_dir, target_dir, file_stem):
 
-        log.message('TRACE', 'Doing XML expansion')
+        logging.message('TRACE', 'Doing XML expansion')
         # Get the XML source file to be expanded
         xml_root = ET.parse(os.path.join(source_dir, file_stem + '.' + tag)).getroot()
         # We auto-generate a page ID, which is just the name of the directory
@@ -145,7 +145,7 @@ class XMLHandler:
         env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dirs))
         # If there is a modules attribute on the root, configure modules
         if 'modules' in xml_root.attrib:
-            log.message('TRACE', 'Configuring modules for ' + file_stem)
+            logging.message('TRACE', 'Configuring modules for ' + file_stem)
             cls.configure_modules(xml_root, env)
         # Register Salal-specific Jinja functions
         custom_jinja_functions.register_functions(env)

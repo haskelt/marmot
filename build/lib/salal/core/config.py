@@ -2,7 +2,7 @@ import sys
 import os.path
 import json
 import argparse
-from salal.core.log import log
+from salal.core.logging import logging
 from salal.core.utilities import utilities
 
 # After initialization, the following attributes are available on
@@ -20,7 +20,8 @@ class Config:
     def initialize (cls):
         cls.set_salal_root()
         cls.parse_arguments()
-        cls.load_system_configuration()
+        cls.load_site_configuration()
+        cls.load_user_configuration()
         cls.load_build_profiles()
         cls.initialize_variables()
         cls.set_extension_directories()
@@ -40,28 +41,38 @@ class Config:
         parser = argparse.ArgumentParser()
         parser.add_argument('action', action = 'store')
         parser.add_argument('profile', action = 'store', nargs = '?', default = 'default')
-        parser.add_argument('--config-file', action = 'store', default = os.path.join(cls.system['paths']['salal_root'], 'system.json'))
+        parser.add_argument('--config-file', action = 'store', default = os.path.join(cls.system['paths']['salal_root'], 'site_config.json'))
         parser.add_argument('--logging-level', action = 'store', default = 'INFO')
         cls._arguments = parser.parse_args()
         # we shouldn't do any logging until this point has been reached,
         # otherwise it won't be impacted by the logging level
-        log.set_logging_level(cls._arguments.logging_level)
+        logging.set_logging_level(cls._arguments.logging_level)
         cls.action = cls._arguments.action
-        log.message('DEBUG', 'Parsed command line arguments')
+        logging.message('DEBUG', 'Parsed command line arguments')
 
     #---------------------------------------------------------------------------
 
     @classmethod
-    def load_system_configuration (cls):
-        log.message('DEBUG', 'Loading system configuration from ' + cls._arguments.config_file)
+    def load_site_configuration (cls):
+        logging.message('DEBUG', 'Loading site configuration from ' + cls._arguments.config_file)
         with open(cls._arguments.config_file) as system_variables_fh:
             utilities.deep_update(cls.system, json.load(system_variables_fh))
 
     #---------------------------------------------------------------------------
 
     @classmethod
+    def load_user_configuration (cls):
+        config_file = os.path.expanduser(cls.system['paths']['user_config_file'])
+        if os.path.isfile(config_file):
+            logging.message('DEBUG', 'Loading user configuration from ' + config_file)
+            with open(config_file) as system_variables_fh:
+                utilities.deep_update(cls.system, json.load(system_variables_fh))
+
+    #---------------------------------------------------------------------------
+
+    @classmethod
     def load_build_profiles (cls):
-        log.message('DEBUG', 'Loading build profiles from ' + cls.system['paths']['profiles_file'])
+        logging.message('DEBUG', 'Loading build profiles from ' + cls.system['paths']['profiles_file'])
         with open(cls.system['paths']['profiles_file']) as build_profiles_fh:
             cls._build_profiles = json.load(build_profiles_fh)
         
@@ -69,7 +80,7 @@ class Config:
 
     @classmethod
     def initialize_variables (cls):
-        log.message('DEBUG', 'Using salal root directory of ' + cls.system['paths']['salal_root'])
+        logging.message('DEBUG', 'Using salal root directory of ' + cls.system['paths']['salal_root'])
         # convert the profile specifier to the correct profile name
         if cls._arguments.profile == 'default':
             cls.system['profile'] = None
@@ -80,15 +91,15 @@ class Config:
                     cls.system['profile'] = build_profile
                     break
             if cls.system['profile'] == None:
-                log.message('ERROR', 'Default profile specified, but there are no profiles configured')
+                logging.message('ERROR', 'Default profile specified, but there are no profiles configured')
         elif cls._arguments.profile in cls._build_profiles:
             cls.system['profile'] = cls._arguments.profile
         else:
-            log.message('ERROR', 'Specified profile ' + cls._arguments.profile + ' does not exist')
-        log.message('INFO', 'Using profile ' + cls.system['profile'])
+            logging.message('ERROR', 'Specified profile ' + cls._arguments.profile + ' does not exist')
+        logging.message('INFO', 'Using profile ' + cls.system['profile'])
         cls.system['paths']['profile_build_dir'] = os.path.join(cls.system['paths']['build_root'], cls.system['profile'])
         
-        log.message('DEBUG', 'Initializing system and project variables')
+        logging.message('DEBUG', 'Initializing system and project variables')
         cls.project = dict()
         profile_vars = { 'system': cls.system, 'project': cls.project }
         for var_type in ['system', 'project']:
@@ -97,7 +108,7 @@ class Config:
             if var_type in cls._build_profiles[cls.system['profile']]:
                 utilities.deep_update(profile_vars[var_type], cls._build_profiles[cls.system['profile']][var_type])
         if 'theme_root' in config.system['paths']:
-            log.message('INFO', 'Using theme ' + config.system['paths']['theme_root'])
+            logging.message('INFO', 'Using theme ' + config.system['paths']['theme_root'])
                 
     #---------------------------------------------------------------------------
 
@@ -121,7 +132,7 @@ class Config:
                 extension_dir = os.path.join(location, cls.system['paths']['extensions_root'])
                 if os.path.isdir(extension_dir):
                     config.system['paths']['extension_dirs'].append(extension_dir)
-                    log.message('DEBUG', 'Registered extensions directory ' + extension_dir)
+                    logging.message('DEBUG', 'Registered extensions directory ' + extension_dir)
         
     #---------------------------------------------------------------------------
     

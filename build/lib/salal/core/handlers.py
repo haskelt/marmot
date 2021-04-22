@@ -1,7 +1,7 @@
 import os
 import sys
 import importlib
-from salal.core.log import log
+from salal.core.logging import logging
 from salal.core.config import config
 
 class Handlers:
@@ -43,15 +43,15 @@ class Handlers:
                             handler_relative_path = os.path.join(directory, entry.name, 'handler.py')
                             handler_full_path = os.path.join(extension_dir, handler_relative_path)
                             if not os.path.exists(handler_full_path):
-                                log.message('WARN', 'Handler directory ' + entry.name + ' does not contain a handler.py file')
+                                logging.message('WARN', 'Handler directory ' + entry.name + ' does not contain a handler.py file')
                             else:
                                 package_specifier = os.path.normpath(handler_relative_path).replace(os.sep, '.').replace('.py', '')
-                                log.message('TRACE', 'Loading handler from ' + package_specifier)
+                                logging.message('TRACE', 'Loading handler from ' + package_specifier)
                                 sys.path.insert(0, extension_dir)
                                 handler_module = importlib.import_module(package_specifier)
                                 sys.path.pop(0)
                                 for tag in handler_module.handler.get_tags():
-                                    log.message('TRACE', tag)
+                                    logging.message('TRACE', tag)
                                     handlers[tag] = handler_module.handler
         return handlers
     

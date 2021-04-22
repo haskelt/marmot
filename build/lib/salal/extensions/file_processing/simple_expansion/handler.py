@@ -7,7 +7,7 @@
 # project variables.
 import os.path
 import jinja2
-from salal.core.log import log
+from salal.core.logging import logging
 from salal.core.config import config
 from salal.core.dependencies import dependencies
 from salal.core.variable_tracker import VariableTracker
@@ -30,7 +30,7 @@ class SimpleExpansion:
 
     @classmethod
     def process (cls, tag, source_dir, target_dir, file_stem):
-        log.message('TRACE', 'Doing simple expansion')
+        logging.message('TRACE', 'Doing simple expansion')
         env = jinja2.Environment(loader = jinja2.FileSystemLoader(source_dir))
         # In Jinja, template paths aren't file system paths and always use
         # forward slashes regardless of the OS

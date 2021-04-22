@@ -2,7 +2,7 @@
 # directory.
 import os.path
 import shutil
-from salal.core.log import log
+from salal.core.logging import logging
 
 class Default:
 
@@ -22,7 +22,7 @@ class Default:
 
     @classmethod
     def process (cls, tag, source_dir, target_dir, file_stem):
-        log.message('TRACE', 'Copying')
+        logging.message('TRACE', 'Copying')
         # the 'copy' extension is just an indicator that we don't apply the
         # normal file handling for this kind of file, so we strip it
         # in the target filename

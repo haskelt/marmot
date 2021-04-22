@@ -1,6 +1,6 @@
 import os
 import re
-from salal.core.log import log
+from salal.core.logging import logging
 from salal.core.config import config
 from salal.core.utilities import utilities 
 from salal.core.dependencies import dependencies
@@ -43,7 +43,7 @@ class Build:
     @classmethod
     def process_content (cls):
         content_dir = config.system['paths']['content_root']
-        log.message('DEBUG', 'Processing content files from ' + content_dir)
+        logging.message('DEBUG', 'Processing content files from ' + content_dir)
         content_files = utilities.find_files(config.system['paths']['content_root'])
         if 'content_whitelist' in config.system:
             whitelist_pass_files = []
@@ -83,7 +83,7 @@ class Build:
         # the theme version of the file.
         resource_dirs = cls.configure_search_dirs('resource')
         for resource_dir in resource_dirs:
-            log.message('DEBUG', 'Processing resources from ' + resource_dir)
+            logging.message('DEBUG', 'Processing resources from ' + resource_dir)
             resource_files = utilities.find_files(resource_dir)
             cls.process_files(resource_files, resource_dir, config.system['paths']['profile_build_dir'])
 
@@ -105,12 +105,12 @@ class Build:
         file_types_to_copy = ['css', 'js', 'py']
         module_dirs = cls.configure_search_dirs('module')
         for module_dir in module_dirs:
-            log.message('DEBUG', 'Processing modules from ' + module_dir)
+            logging.message('DEBUG', 'Processing modules from ' + module_dir)
             module_subdirs = utilities.find_subdirectories(module_dir)
             for module_subdir in module_subdirs:
-                log.message('TRACE', 'Found module ' + module_subdir)
+                logging.message('TRACE', 'Found module ' + module_subdir)
                 for file_type in file_types_to_copy:
-                    log.message('TRACE', 'Looking for ' + file_type + 'files in ' + module_subdir)
+                    logging.message('TRACE', 'Looking for ' + file_type + 'files in ' + module_subdir)
                     source_dir = os.path.join(module_dir, module_subdir)
                     target_dir = os.path.join(config.system['paths']['profile_build_dir'], file_type, module_subdir)
                     module_files = utilities.find_files_by_extension(source_dir, file_type)
@@ -126,7 +126,7 @@ class Build:
         cls.process_content()
         cls.process_resources()
         cls.process_modules()
-        log.message('INFO', str(dependencies.num_files_checked()) + ' file(s) processed, ' + str(dependencies.num_files_built()) + ' file(s) built')
+        logging.message('INFO', str(dependencies.num_files_checked()) + ' file(s) processed, ' + str(dependencies.num_files_built()) + ' file(s) built')
         dependencies.write_log()
 
     #---------------------------------------------------------------------------

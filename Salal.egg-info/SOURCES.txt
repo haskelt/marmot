@@ -13,6 +13,6 @@ salal/core/config.py
 salal/core/dependencies.py
 salal/core/file_processing.py
 salal/core/handlers.py
-salal/core/log.py
+salal/core/logging.py
 salal/core/utilities.py
 salal/core/variable_tracker.py

@@ -1,7 +1,7 @@
 from datetime import datetime
 import os.path
 import json
-from salal.core.log import log
+from salal.core.logging import logging
 from salal.core.config import config
 from salal.core.utilities import utilities
 
@@ -13,7 +13,7 @@ class DependencyManager:
 
     @classmethod
     def initialize (cls):
-        log.message('DEBUG', 'Initializing dependency tracking')
+        logging.message('DEBUG', 'Initializing dependency tracking')
 
         # read the build log
         cls.build_log_file = os.path.join(config.system['paths']['config_root'], config.system['paths']['build_log_dir'], config.system['profile'] + '.json')
@@ -66,10 +66,10 @@ class DependencyManager:
             # rebuild of any source files that referenced the
             # variable.
             if not variable in config.project:
-                log.message('WARN', 'Variable ' + variable + ' is in the build log but no longer exists')
+                logging.message('WARN', 'Variable ' + variable + ' is in the build log but no longer exists')
                 variable_change_flags[variable] = True
             elif variable_log[variable] != config.project[variable]:
-                log.message('TRACE', 'Detected change to variable ' + variable)
+                logging.message('TRACE', 'Detected change to variable ' + variable)
                 variable_change_flags[variable] = True
                 variable_updates[variable] = config.project[variable]
             else:
@@ -91,12 +91,12 @@ class DependencyManager:
             # throw an error here, but we do warn trigger a rebuild of
             # any source files that referenced the file.
             if not os.path.isfile(file_path):
-                log.message('WARN', file_type.capitalize() + ' ' + file_path + ' is in the build log but no longer exists')
+                logging.message('WARN', file_type.capitalize() + ' ' + file_path + ' is in the build log but no longer exists')
                 file_change_flags[file_path] = True
             else:
                 file_mod_time = datetime.fromtimestamp(os.path.getmtime(file_path))
                 if file_mod_time > cls.last_build_time:
-                    log.message('TRACE', 'Detected change to ' + file_type + ' ' + file_path)
+                    logging.message('TRACE', 'Detected change to ' + file_type + ' ' + file_path)
                     file_change_flags[file_path] = True
                 else:
                     file_change_flags[file_path] = False
@@ -112,38 +112,38 @@ class DependencyManager:
         # Is this file in the build log? If not, rebuild, if yes, then
         # record that a build check was conducted for it and proceed.
         if target_key not in cls.file_log:
-            log.message('TRACE', 'Target ' + target_file + ' is not in the build log, build required')
+            logging.message('TRACE', 'Target ' + target_file + ' is not in the build log, build required')
             return True
         else:
             cls.file_check_flags[target_key] = True
 
         # Does the target exist? If not, rebuild.
         if not os.path.isfile(target_file):
-            log.message('TRACE', 'Target ' + target_file + ' does not exist, build required')
+            logging.message('TRACE', 'Target ' + target_file + ' does not exist, build required')
             return True
 
         # Is the source newer than the target? If so, rebuild.
         source_mod_time = datetime.fromtimestamp(os.path.getmtime(source_file))
         if source_mod_time > cls.last_build_time:
-            log.message('TRACE', 'Source file ' + source_file + ' is newer than target ' + target_file + ', build required')
+            logging.message('TRACE', 'Source file ' + source_file + ' is newer than target ' + target_file + ', build required')
             return True
 
         # Have any referenced variables been changed? If so, rebuild.
         for variable in cls.file_log[target_key]['variables']:
             if cls.variable_change_flags[variable]:
-                log.message('TRACE', 'Variable ' + variable + ' used by target ' + target_file + ' has changed, build required')
+                logging.message('TRACE', 'Variable ' + variable + ' used by target ' + target_file + ' has changed, build required')
                 return True
 
         # Have any referenced templates been changed? If so, rebuild.
         for template in cls.file_log[target_key]['templates']:
             if cls.template_change_flags[template]:
-                log.message('TRACE', 'Template ' + template + ' used by target ' + target_file + ' has changed, build required')
+                logging.message('TRACE', 'Template ' + template + ' used by target ' + target_file + ' has changed, build required')
                 return True
 
         # Have any referenced resources been changed? If so, rebuild.
         for resource in cls.file_log[target_key]['resources']:
             if cls.resource_change_flags[resource]:
-                log.message('TRACE', 'Resource ' + resource + ' used by target ' + target_file + ' has changed, build required')
+                logging.message('TRACE', 'Resource ' + resource + ' used by target ' + target_file + ' has changed, build required')
                 return True
 
         return False
@@ -157,7 +157,7 @@ class DependencyManager:
         cls.cur_source = source_file
         cls.cur_file_key = target_file + cls.separator + source_file
         if cls.cur_file_key not in cls.file_log:
-            log.message('TRACE', 'Detected new build target ' + target_file + ', now tracking it')
+            logging.message('TRACE', 'Detected new build target ' + target_file + ', now tracking it')
         cls.file_updates[cls.cur_file_key] = {
             'target': target_file,
             'source': source_file,
@@ -173,14 +173,14 @@ class DependencyManager:
         if variable_name not in cls.file_updates[cls.cur_file_key]['variables']:
             cls.file_updates[cls.cur_file_key]['variables'].append(variable_name)
             if variable_name not in cls.variable_log and variable_name not in cls.variable_updates:
-                log.message('TRACE', 'Detected use of new variable ' + variable_name + ', now tracking it');
+                logging.message('TRACE', 'Detected use of new variable ' + variable_name + ', now tracking it');
                 cls.variable_updates[variable_name] = config.project[variable_name] 
 
     #---------------------------------------------------------------------------
 
     @classmethod
     def variable_not_found (cls, variable_name):
-        log.message('WARN', 'Encountered reference to undefined variable ' + variable_name)
+        logging.message('WARN', 'Encountered reference to undefined variable ' + variable_name)
     
     #---------------------------------------------------------------------------
     
@@ -189,7 +189,7 @@ class DependencyManager:
         if template_file not in cls.file_updates[cls.cur_file_key]['templates']:
             cls.file_updates[cls.cur_file_key]['templates'].append(template_file)
             if template_file not in cls.template_log and template_file not in cls.template_updates:
-                log.message('TRACE', 'Detected use of new template ' + template_file + ', now tracking it');
+                logging.message('TRACE', 'Detected use of new template ' + template_file + ', now tracking it');
                 cls.template_updates.add(template_file) 
                 
     #---------------------------------------------------------------------------
@@ -199,7 +199,7 @@ class DependencyManager:
         if resource_file not in cls.file_updates[cls.cur_file_key]['resources']:
             cls.file_updates[cls.cur_file_key]['resources'].append(resource_file)
             if resource_file not in cls.resource_log and resource_file not in cls.resource_updates:
-                log.message('TRACE', 'Detected use of new resource ' + resource_file + ', now tracking it');
+                logging.message('TRACE', 'Detected use of new resource ' + resource_file + ', now tracking it');
                 cls.resource_updates.add(resource_file) 
                 
     #---------------------------------------------------------------------------
@@ -233,14 +233,14 @@ class DependencyManager:
                     active_references.add(reference_path)
         for reference_path in change_flags:
             if reference_path not in active_references:
-                log.message('TRACE', reference_type.capitalize() + ' ' + reference_path + ' is no longer part of the build, discontinuing tracking');
+                logging.message('TRACE', reference_type.capitalize() + ' ' + reference_path + ' is no longer part of the build, discontinuing tracking');
                 log.remove(reference_path)
                 
     #---------------------------------------------------------------------------
     
     @classmethod
     def write_log (cls):
-        log.message('DEBUG', 'Updating build log')
+        logging.message('DEBUG', 'Updating build log')
         
         # incorporate updates to the file, variable, template, and resource logs
         cls.file_log.update(cls.file_updates)
@@ -252,7 +252,7 @@ class DependencyManager:
         # longer part of the build)
         for file_ref in cls.file_check_flags:
             if not cls.file_check_flags[file_ref]:
-                log.message('TRACE', 'Target ' + cls.file_log[file_ref]['target'] + ' is no longer part of the build, discontinuing tracking and deleting from build directory');
+                logging.message('TRACE', 'Target ' + cls.file_log[file_ref]['target'] + ' is no longer part of the build, discontinuing tracking and deleting from build directory');
                 if os.path.exists(cls.file_log[file_ref]['target']):
                     os.remove(cls.file_log[file_ref]['target'])
                 cls.file_log.pop(file_ref)
@@ -260,7 +260,7 @@ class DependencyManager:
         # remove build directories that are now empty
         empty_dirs = utilities.find_empty_subdirectories(config.system['paths']['profile_build_dir'])
         for dir in empty_dirs:
-            log.message('TRACE', 'Build directory ' + dir + ' no longer contains anything, deleting')
+            logging.message('TRACE', 'Build directory ' + dir + ' no longer contains anything, deleting')
             os.rmdir(dir)
                 
         # remove variables from the log that aren't referenced by a
@@ -272,7 +272,7 @@ class DependencyManager:
                     variables_referenced.add(variable)
         for variable in cls.variable_change_flags:
             if variable not in variables_referenced:
-                log.message('TRACE', 'Variable ' + variable + ' is no longer part of the build, discontinuing tracking'); 
+                logging.message('TRACE', 'Variable ' + variable + ' is no longer part of the build, discontinuing tracking'); 
                 cls.variable_log.pop(variable)
 
         # remove templates and resources from the log that aren't

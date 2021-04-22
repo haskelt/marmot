@@ -3,7 +3,7 @@ import copy
 import glob
 import re
 import os
-from salal.core.log import log
+from salal.core.logging import logging
 
 class Utilities:
 
