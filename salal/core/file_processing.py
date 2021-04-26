@@ -40,6 +40,8 @@ class FileProcessing:
             dependencies.start_build_tracking(target_file, source_file)
             cls.handlers[tag].process(ext, source_dir, target_dir, file_stem)
             dependencies.stop_build_tracking()
+        else:
+            logging.message('TRACE', source_file + ' is up to date, skipping')
 
     #---------------------------------------------------------------------------
 

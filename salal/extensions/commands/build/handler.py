@@ -32,9 +32,37 @@ class Build:
         return search_dirs
                 
     #---------------------------------------------------------------------------
+
+    @classmethod
+    def select_files_to_process (cls, file_path_list, file_type):
+        logging.message('DEBUG', 'Determining which ' + file_type + ' files pass include and exclude checks') 
+        files_selected = []
+        for file_path in file_path_list:
+            passed_check = True
+            if 'build' in config.system and file_type in config.system['build']:
+                if 'include' in config.system['build'][file_type]:
+                    passed_check = False
+                    for pattern in config.system['build'][file_type]['include']:
+                        if re.search(pattern, file_path) != None:
+                            passed_check = True
+                            break
+                if passed_check and 'exclude' in config.system['build'][file_type]:
+                    for pattern in config.system['build'][file_type]['exclude']:
+                        if re.search(pattern, file_path) != None:
+                            passed_check = False
+                            break
+            if passed_check:
+                logging.message('TRACE', 'Passed: ' + file_path)
+                files_selected.append(file_path)
+            else:
+                logging.message('TRACE', 'Failed: ' + file_path)
+        return files_selected
+    
+    #---------------------------------------------------------------------------
     
     @classmethod
     def process_files (cls, file_path_list, source_dir, target_dir):
+        logging.message('DEBUG', 'Determining which files need to be rebuilt')
         for file_path in file_path_list:
             file_processing.process(source_dir, target_dir, file_path)
 
@@ -45,26 +73,8 @@ class Build:
         content_dir = config.system['paths']['content_root']
         logging.message('DEBUG', 'Processing content files from ' + content_dir)
         content_files = utilities.find_files(config.system['paths']['content_root'])
-        if 'content_whitelist' in config.system:
-            whitelist_pass_files = []
-            for content_file in content_files:
-                for pattern in config.system['content_whitelist']:
-                    if re.search(pattern, content_file) != None:
-                        whitelist_pass_files.append(content_file)
-                        break
-            content_files = whitelist_pass_files
-        if 'content_blacklist' in config.system:
-            blacklist_pass_files = []
-            for content_file in content_files:
-                passed_check = True
-                for pattern in config.system['content_blacklist']:
-                    if re.search(pattern, content_file) != None:
-                        passed_check = False
-                        break
-                if passed_check:
-                    blacklist_pass_files.append(content_file)
-            content_files = blacklist_pass_files
-        cls.process_files(content_files, content_dir, config.system['paths']['profile_build_dir'])
+        files_to_process = cls.select_files_to_process(content_files, 'content')
+        cls.process_files(files_to_process, content_dir, config.system['paths']['profile_build_dir'])
 
     #---------------------------------------------------------------------------
     @classmethod
@@ -85,7 +95,8 @@ class Build:
         for resource_dir in resource_dirs:
             logging.message('DEBUG', 'Processing resources from ' + resource_dir)
             resource_files = utilities.find_files(resource_dir)
-            cls.process_files(resource_files, resource_dir, config.system['paths']['profile_build_dir'])
+            files_to_process = cls.select_files_to_process(resource_files, 'resources')
+            cls.process_files(files_to_process, resource_dir, config.system['paths']['profile_build_dir'])
 
     #---------------------------------------------------------------------------
 
@@ -108,13 +119,14 @@ class Build:
             logging.message('DEBUG', 'Processing modules from ' + module_dir)
             module_subdirs = utilities.find_subdirectories(module_dir)
             for module_subdir in module_subdirs:
-                logging.message('TRACE', 'Found module ' + module_subdir)
+                logging.message('DEBUG', 'Found module ' + module_subdir)
                 for file_type in file_types_to_copy:
-                    logging.message('TRACE', 'Looking for ' + file_type + 'files in ' + module_subdir)
+                    logging.message('DEBUG', 'Looking for ' + file_type + ' files in ' + module_subdir)
                     source_dir = os.path.join(module_dir, module_subdir)
                     target_dir = os.path.join(config.system['paths']['profile_build_dir'], file_type, module_subdir)
                     module_files = utilities.find_files_by_extension(source_dir, file_type)
-                    cls.process_files(module_files, source_dir, target_dir)
+                    files_to_process = cls.select_files_to_process(module_files, 'modules')
+                    cls.process_files(files_to_process, source_dir, target_dir)
         
     #---------------------------------------------------------------------------
 
