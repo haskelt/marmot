@@ -16,8 +16,8 @@ class FileProcessing:
     #---------------------------------------------------------------------------
 
     @classmethod
-    def process (cls, source_dir, target_dir, file_relative_path):
-        file_stem, ext = os.path.splitext(file_relative_path)
+    def process (cls, source_file_path, target_file_path):
+        file_stem, ext = os.path.splitext(source_file_path)
         if file_stem.startswith('.'):
             ext = file_stem
             file_stem = ''
@@ -30,18 +30,15 @@ class FileProcessing:
         else:
             logging.message('WARN', 'Handling for file type ' + ext + ' is not configured, skipping.')
             return
-        target_ext = cls.handlers[tag].get_target_extension(ext)
-        source_file = os.path.join(source_dir, file_relative_path)
-        target_file = os.path.join(target_dir, file_stem + '.' + target_ext)
-        if dependencies.needs_build(target_file, source_file):
+        if dependencies.needs_build(target_file_path, source_file_path):
             # create the target directory if it doesn't exist
-            os.makedirs(os.path.join(target_dir, os.path.dirname(file_relative_path)), exist_ok = True)
-            logging.message('INFO', source_file)
-            dependencies.start_build_tracking(target_file, source_file)
-            cls.handlers[tag].process(ext, source_dir, target_dir, file_stem)
+            os.makedirs(os.path.dirname(target_file_path), exist_ok = True)
+            logging.message('INFO', target_file_path)
+            dependencies.start_build_tracking(target_file_path, source_file_path)
+            cls.handlers[tag].process(source_file_path, target_file_path)
             dependencies.stop_build_tracking()
         else:
-            logging.message('TRACE', source_file + ' is up to date, skipping')
+            logging.message('TRACE', target_file_path + ' is up to date, skipping')
 
     #---------------------------------------------------------------------------
 
