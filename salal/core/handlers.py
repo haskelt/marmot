@@ -50,9 +50,9 @@ class Handlers:
                                 sys.path.insert(0, extension_dir)
                                 handler_module = importlib.import_module(package_specifier)
                                 sys.path.pop(0)
-                                for tag in handler_module.handler.get_tags():
-                                    logging.message('TRACE', tag)
-                                    handlers[tag] = handler_module.handler
+                                tag = handler_module.handler.get_tag()
+                                logging.message('TRACE', tag)
+                                handlers[tag] = handler_module.handler
         return handlers
     
     #---------------------------------------------------------------------------

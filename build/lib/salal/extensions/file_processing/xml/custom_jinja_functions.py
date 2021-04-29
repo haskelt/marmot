@@ -18,7 +18,7 @@ def load_config(source):
 #------------------------------------------------------------------------------
 
 def page_attributes(page_id):
-    # we use 'home' instead of a blank id 
+    # we use 'home' instead of a blank id
     if page_id == 'home':
         page_path = os.path.join(config.system['paths']['content_root'], 'index.xml')
     else:

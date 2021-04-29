@@ -17,15 +17,9 @@ class XMLHandler:
     #---------------------------------------------------------------------------
 
     @classmethod
-    def get_tags (cls):
-        return ['xml']
+    def get_tag (cls):
+        return 'xml'
 
-    #---------------------------------------------------------------------------
-
-    @classmethod
-    def get_target_extension(cls, source_ext):
-        return 'html'
-    
     #---------------------------------------------------------------------------
     
     @classmethod
@@ -119,20 +113,21 @@ class XMLHandler:
     #---------------------------------------------------------------------------
 
     @classmethod
-    def process (cls, tag, source_dir, target_dir, file_stem):
+    def process (cls, source_file_path, target_file_path):
 
         logging.message('TRACE', 'Doing XML expansion')
         # Get the XML source file to be expanded
-        xml_root = ET.parse(os.path.join(source_dir, file_stem + '.' + tag)).getroot()
+        xml_root = ET.parse(source_file_path).getroot()
         # We auto-generate a page ID, which is just the name of the directory
         # holding the index.xml file
+        file_stem = os.path.relpath(source_file_path, config.system['paths']['content_root'])
         page_depth = file_stem.count('/')
         if page_depth == 0:
             page_id = 'home'
         elif page_depth == 1:
-            page_id = re.sub(r'/index\Z', '', file_stem)
+            page_id = re.sub(r'/index\.xml\Z', '', file_stem)
         else:
-            page_id = re.sub(r'\A.+/([^/]+)/index\Z', r'\1', file_stem)
+            page_id = re.sub(r'\A.+/([^/]+)/index\.xml\Z', r'\1', file_stem)
         xml_root.attrib['id'] = page_id
         # Configure the directories to be searched for templates. We
         # add the theme template dir after the local one, so a local
@@ -152,7 +147,7 @@ class XMLHandler:
         # Do template expansion on the source file
         xml_root.text = cls.render_node(xml_root, env, VariableTracker(config.project, success_callback = dependencies.variable_used, failure_callback = dependencies.variable_not_found))
         # Write the expanded file to the target directory
-        with open(os.path.join(target_dir, file_stem + '.html'), mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
+        with open(target_file_path, mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
             output_fh.write(xml_root.text)
 
     #---------------------------------------------------------------------------

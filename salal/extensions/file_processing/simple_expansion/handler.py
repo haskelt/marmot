@@ -17,15 +17,9 @@ class SimpleExpansion:
     #---------------------------------------------------------------------------
 
     @classmethod
-    def get_tags (cls):
-        return ['js', 'css', 'py', 'htaccess']
+    def get_tag (cls):
+        return 'simple_expansion'
 
-    #---------------------------------------------------------------------------
-
-    @classmethod
-    def get_target_extension(cls, source_ext):
-        return source_ext
-    
     #---------------------------------------------------------------------------
 
     @classmethod

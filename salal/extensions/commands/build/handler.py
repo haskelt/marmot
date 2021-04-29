@@ -11,8 +11,8 @@ class Build:
     #---------------------------------------------------------------------------
 
     @classmethod
-    def get_tags (cls):
-        return ['build']
+    def get_tag (cls):
+        return 'build'
     
     #---------------------------------------------------------------------------
 
@@ -136,7 +136,6 @@ class Build:
         # Theme files get processed first, so they can be overridden
         # by local files. This is accomplished simply by overwriting
         # the theme version of the file.
-        file_types_to_copy = ['css', 'js', 'py']
         module_dirs = cls.configure_search_dirs('module')
         for module_dir in module_dirs:
             logging.message('DEBUG', 'Processing modules from ' + module_dir)

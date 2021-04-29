@@ -22,19 +22,34 @@
 			}
 		]
 	},
-	    "build": {
-		"locations": {
-		    "content": {
-			"mappings": [
-			    [ "\\.xml$", "\\.xml$", ".html" ]
-			]
-		    },
-		    "modules": {
-			"mappings": [
-			    [ "\\.\\w+$", "(^.+)\\.(\\w+)$", "\\2/\\1.\\2" ] 
-			],
-			"exclude": [ "\\.html$" ]
-		    }
-		}
+    "build": {
+	"locations": {
+	    "content": {
+		"mappings": [
+		    [ "\\.xml$", "\\.xml$", ".html" ]
+		]
+	    },
+	    "modules": {
+		"mappings": [
+		    [ "\\.\\w+$", "(^.+)\\.(\\w+)$", "\\2/\\1.\\2" ] 
+		],
+		"exclude": [ "\\.html$" ]
 	    }
+	}
+    },
+    "file_handlers": {
+	"xml": {
+	    "include": [ "\\.xml$" ],
+	    "priority": 1
+	},
+	"simple_expansion": {
+	    "include": [ "\\.css$", "\\.js$" ],
+	    "priority": 1
+	},
+	"copying": {
+	    "include": [ ".+" ],
+	    "priority": 2
+	}
+    }
+    
 }

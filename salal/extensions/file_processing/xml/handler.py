@@ -17,15 +17,9 @@ class XMLHandler:
     #---------------------------------------------------------------------------
 
     @classmethod
-    def get_tags (cls):
-        return ['xml']
+    def get_tag (cls):
+        return 'xml'
 
-    #---------------------------------------------------------------------------
-
-    @classmethod
-    def get_target_extension(cls, source_ext):
-        return 'html'
-    
     #---------------------------------------------------------------------------
     
     @classmethod

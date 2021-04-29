@@ -9,14 +9,8 @@ class Default:
     #---------------------------------------------------------------------------
 
     @classmethod
-    def get_tags (cls):
-        return ['default']
-    
-    #---------------------------------------------------------------------------
-
-    @classmethod
-    def get_target_extension(cls, source_ext):
-        return source_ext
+    def get_tag (cls):
+        return 'copying'
     
     #---------------------------------------------------------------------------
 

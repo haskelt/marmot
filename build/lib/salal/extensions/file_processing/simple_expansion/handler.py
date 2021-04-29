@@ -17,26 +17,21 @@ class SimpleExpansion:
     #---------------------------------------------------------------------------
 
     @classmethod
-    def get_tags (cls):
-        return ['js', 'css', 'py', 'htaccess']
+    def get_tag (cls):
+        return 'simple_expansion'
 
     #---------------------------------------------------------------------------
 
     @classmethod
-    def get_target_extension(cls, source_ext):
-        return source_ext
-    
-    #---------------------------------------------------------------------------
-
-    @classmethod
-    def process (cls, tag, source_dir, target_dir, file_stem):
+    def process (cls, source_file_path, target_file_path):
         logging.message('TRACE', 'Doing simple expansion')
+        source_dir, source_file = os.path.split(source_file_path)
         env = jinja2.Environment(loader = jinja2.FileSystemLoader(source_dir))
         # In Jinja, template paths aren't file system paths and always use
         # forward slashes regardless of the OS
-        template = env.get_template((file_stem + '.' + tag).replace('\\','/'))
+        template = env.get_template(source_file)
         output = template.render({'project': VariableTracker(config.project, success_callback = dependencies.variable_used, failure_callback = dependencies.variable_not_found)})
-        with open(os.path.join(target_dir, file_stem + '.' + tag), mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
+        with open(target_file_path, mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
             output_fh.write(output)
 
     #---------------------------------------------------------------------------

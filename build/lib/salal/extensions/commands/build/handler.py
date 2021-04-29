@@ -11,8 +11,8 @@ class Build:
     #---------------------------------------------------------------------------
 
     @classmethod
-    def get_tags (cls):
-        return ['build']
+    def get_tag (cls):
+        return 'build'
     
     #---------------------------------------------------------------------------
 
@@ -32,11 +32,62 @@ class Build:
         return search_dirs
                 
     #---------------------------------------------------------------------------
+
+    @classmethod
+    def select_files_to_process (cls, file_path_list, location):
+        logging.message('DEBUG', 'Determining which ' + location + ' files pass include and exclude checks') 
+        files_selected = []
+        for file_path in file_path_list:
+            passed_check = True
+            if 'build' in config.system and 'locations' in config.system['build'] and location in config.system['build']['locations']:
+                if 'include' in config.system['build']['locations'][location]:
+                    passed_check = False
+                    for pattern in config.system['build']['locations'][location]['include']:
+                        if re.search(pattern, file_path) != None:
+                            passed_check = True
+                            break
+                if passed_check and 'exclude' in config.system['build']['locations'][location]:
+                    for pattern in config.system['build']['locations'][location]['exclude']:
+                        if re.search(pattern, file_path) != None:
+                            passed_check = False
+                            break
+            if passed_check:
+                logging.message('TRACE', 'Passed: ' + file_path)
+                files_selected.append(file_path)
+            else:
+                logging.message('TRACE', 'Failed: ' + file_path)
+        return files_selected
+    
+    #---------------------------------------------------------------------------
     
     @classmethod
-    def process_files (cls, file_path_list, source_dir, target_dir):
-        for file_path in file_path_list:
-            file_processing.process(source_dir, target_dir, file_path)
+    def process_files (cls, source_relative_path_list, source_dir, target_dir, location):
+        logging.message('DEBUG', 'Determining which files need to be rebuilt')
+        if 'build' in config.system and 'locations' in config.system['build'] and location in config.system['build']['locations'] and 'mappings' in config.system['build']['locations'][location]:
+            path_mappings = config.system['build']['locations'][location]['mappings']
+        else:
+            path_mappings = []
+        for source_relative_path in source_relative_path_list:
+            source_file_path = os.path.join(source_dir, source_relative_path)
+
+            # By default, we use the location and name of the source
+            # file within the source directory as the location and
+            # name of the target file within the target
+            # directory. However, alternative mappings can be
+            # specified via system variables. Each mapping is a
+            # three-element array: A 'selection' pattern which is used
+            # to determine whether the mapping applies to this file, a
+            # 'find' pattern which determines what text will be modified,
+            # and a 'replacement' pattern which determines what it will
+            # be replaced with.
+            target_relative_path = source_relative_path
+            for mapping in path_mappings:
+                if re.search(mapping[0], source_relative_path):
+                    target_relative_path = re.sub(mapping[1], mapping[2], source_relative_path)
+                    break
+            target_file_path = os.path.join(target_dir, target_relative_path)   
+
+            file_processing.process(source_file_path, target_file_path)
 
     #---------------------------------------------------------------------------
     
@@ -45,26 +96,8 @@ class Build:
         content_dir = config.system['paths']['content_root']
         logging.message('DEBUG', 'Processing content files from ' + content_dir)
         content_files = utilities.find_files(config.system['paths']['content_root'])
-        if 'content_whitelist' in config.system:
-            whitelist_pass_files = []
-            for content_file in content_files:
-                for pattern in config.system['content_whitelist']:
-                    if re.search(pattern, content_file) != None:
-                        whitelist_pass_files.append(content_file)
-                        break
-            content_files = whitelist_pass_files
-        if 'content_blacklist' in config.system:
-            blacklist_pass_files = []
-            for content_file in content_files:
-                passed_check = True
-                for pattern in config.system['content_blacklist']:
-                    if re.search(pattern, content_file) != None:
-                        passed_check = False
-                        break
-                if passed_check:
-                    blacklist_pass_files.append(content_file)
-            content_files = blacklist_pass_files
-        cls.process_files(content_files, content_dir, config.system['paths']['profile_build_dir'])
+        files_to_process = cls.select_files_to_process(content_files, 'content')
+        cls.process_files(files_to_process, content_dir, config.system['paths']['profile_build_dir'], 'content')
 
     #---------------------------------------------------------------------------
     @classmethod
@@ -85,7 +118,8 @@ class Build:
         for resource_dir in resource_dirs:
             logging.message('DEBUG', 'Processing resources from ' + resource_dir)
             resource_files = utilities.find_files(resource_dir)
-            cls.process_files(resource_files, resource_dir, config.system['paths']['profile_build_dir'])
+            files_to_process = cls.select_files_to_process(resource_files, 'resources')
+            cls.process_files(files_to_process, resource_dir, config.system['paths']['profile_build_dir'], 'resources')
 
     #---------------------------------------------------------------------------
 
@@ -102,19 +136,12 @@ class Build:
         # Theme files get processed first, so they can be overridden
         # by local files. This is accomplished simply by overwriting
         # the theme version of the file.
-        file_types_to_copy = ['css', 'js', 'py']
         module_dirs = cls.configure_search_dirs('module')
         for module_dir in module_dirs:
             logging.message('DEBUG', 'Processing modules from ' + module_dir)
-            module_subdirs = utilities.find_subdirectories(module_dir)
-            for module_subdir in module_subdirs:
-                logging.message('TRACE', 'Found module ' + module_subdir)
-                for file_type in file_types_to_copy:
-                    logging.message('TRACE', 'Looking for ' + file_type + 'files in ' + module_subdir)
-                    source_dir = os.path.join(module_dir, module_subdir)
-                    target_dir = os.path.join(config.system['paths']['profile_build_dir'], file_type, module_subdir)
-                    module_files = utilities.find_files_by_extension(source_dir, file_type)
-                    cls.process_files(module_files, source_dir, target_dir)
+            module_files = utilities.find_files(module_dir)
+            files_to_process = cls.select_files_to_process(module_files, 'modules')
+            cls.process_files(files_to_process, module_dir, config.system['paths']['profile_build_dir'], 'modules')
         
     #---------------------------------------------------------------------------
 
