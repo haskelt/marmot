@@ -24,9 +24,9 @@ class XMLHandler:
     
     @classmethod
     def configure_modules (cls, node, env):
-        module_dirs = [os.path.join(config.system['paths']['design_root'], config.system['paths']['module_dir'])]
-        if 'theme_root' in config.system['paths']:
-            module_dirs.append(os.path.join(config.system['paths']['theme_root'], config.system['paths']['module_dir']))
+        module_dirs = [os.path.join(config.parameters['paths']['design_root'], config.parameters['paths']['module_dir'])]
+        if 'theme_root' in config.parameters['paths']:
+            module_dirs.append(os.path.join(config.parameters['paths']['theme_root'], config.parameters['paths']['module_dir']))
         for module in node.attrib['modules'].split():
             # try to locate the module directory
             module_location = None
@@ -75,7 +75,7 @@ class XMLHandler:
         # set the text content to the empty string.
         if node.text:
             content_template = env.from_string(node.text)
-            node.text = content_template.render({'project': variables})
+            node.text = content_template.render({'site': variables})
         else:
             node.text = ''
             
@@ -87,7 +87,7 @@ class XMLHandler:
                 node.text += cls.render_node(child, env, variables)
                 if child.tail:
                     content_template = env.from_string(child.tail)
-                    node.text += content_template.render({'project': variables})
+                    node.text += content_template.render({'site': variables})
 
         # Initialize the variables that will be passed to Jinja for rendering
         # the node. We start with whatever variables were passed in, and
@@ -95,7 +95,7 @@ class XMLHandler:
         # to this node. Those include any attributes on the node, as well as
         # a special variable 'this.content' that contains the node text that
         # was set above.
-        render_variables = {'project': variables}
+        render_variables = {'site': variables}
         render_variables['this'] = {'content': node.text} 
         if node.attrib:
             render_variables['this'].update(node.attrib)
@@ -120,7 +120,7 @@ class XMLHandler:
         xml_root = ET.parse(source_file_path).getroot()
         # We auto-generate a page ID, which is just the name of the directory
         # holding the index.xml file
-        file_stem = os.path.relpath(source_file_path, config.system['paths']['content_root'])
+        file_stem = os.path.relpath(source_file_path, config.parameters['paths']['content_root'])
         page_depth = file_stem.count('/')
         if page_depth == 0:
             page_id = 'home'
@@ -132,9 +132,9 @@ class XMLHandler:
         # Configure the directories to be searched for templates. We
         # add the theme template dir after the local one, so a local
         # template will be found first if there is one
-        template_dirs = [os.path.join(config.system['paths']['design_root'], config.system['paths']['template_dir'])] 
-        if 'theme_root' in config.system['paths']:
-            template_dirs.append(os.path.join(config.system['paths']['theme_root'], config.system['paths']['template_dir']))
+        template_dirs = [os.path.join(config.parameters['paths']['design_root'], config.parameters['paths']['template_dir'])] 
+        if 'theme_root' in config.parameters['paths']:
+            template_dirs.append(os.path.join(config.parameters['paths']['theme_root'], config.parameters['paths']['template_dir']))
         # Initialize Jinja
         #env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dirs), trim_blocks = True, lstrip_blocks = True)
         env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dirs))
@@ -145,7 +145,7 @@ class XMLHandler:
         # Register Salal-specific Jinja functions
         custom_jinja_functions.register_functions(env)
         # Do template expansion on the source file
-        xml_root.text = cls.render_node(xml_root, env, VariableTracker(config.project, success_callback = dependencies.variable_used, failure_callback = dependencies.variable_not_found))
+        xml_root.text = cls.render_node(xml_root, env, VariableTracker(config.site, success_callback = dependencies.variable_used, failure_callback = dependencies.variable_not_found))
         # Write the expanded file to the target directory
         with open(target_file_path, mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
             output_fh.write(xml_root.text)

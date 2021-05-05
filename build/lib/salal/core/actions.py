@@ -11,10 +11,10 @@ class Actions:
 
     @classmethod
     def initialize (cls):
-        if 'action_commands' not in config.system:
+        if 'action_commands' not in config.parameters:
             logging.message('ERROR', 'No actions are configured')
         logging.message('DEBUG', 'Loading command handlers')
-        cls.handlers = handlers.load_handlers(config.system['paths']['command_handlers_dir'])
+        cls.handlers = handlers.load_handlers(config.parameters['paths']['command_handlers_dir'])
 
     #---------------------------------------------------------------------------
 
@@ -30,7 +30,7 @@ class Actions:
     @classmethod
     def execute (cls, action):
         # Make sure this action is defined
-        if action not in config.system['action_commands']:
+        if action not in config.parameters['action_commands']:
             logging.message('ERROR', 'The action ' + action + ' is not configured')
         else:
             logging.message('INFO', 'Executing ' + action + ' action')
@@ -38,11 +38,11 @@ class Actions:
         # Iterates through the list of commands associated with 'tag',
         # does substitution for system variables, and passes them to
         # the OS for execution
-        for command_spec in config.system['action_commands'][action]:
+        for command_spec in config.parameters['action_commands'][action]:
             if command_spec['type'] == 'internal':
                 cls.execute_internal_command(command_spec['command'])
             elif command_spec['type'] == 'external':
-                command_string = utilities.substitute_variables(command_spec['command'], config.system)
+                command_string = utilities.substitute_variables(command_spec['command'], config.parameters)
                 logging.message('INFO', command_string)
                 os.system(command_string)
             else:

@@ -20,9 +20,9 @@ class Config:
     def initialize (cls):
         cls.set_salal_root()
         cls.parse_arguments()
-        cls.load_site_configuration()
+        cls.load_system_configuration()
         cls.load_user_configuration()
-        cls.load_build_profiles()
+        cls.load_project_configuration()
         cls.initialize_variables()
         cls.set_extension_directories()
         
@@ -30,9 +30,9 @@ class Config:
  
     @classmethod
     def set_salal_root (cls):
-        cls.system = {}
-        cls.system['paths'] = {}
-        cls.system['paths']['salal_root'] = os.path.normpath(os.path.dirname(sys.modules['__main__'].__file__))
+        cls.parameters = {}
+        cls.parameters['paths'] = {}
+        cls.parameters['paths']['salal_root'] = os.path.normpath(os.path.dirname(sys.modules['__main__'].__file__))
     
     #---------------------------------------------------------------------------
    
@@ -41,7 +41,7 @@ class Config:
         parser = argparse.ArgumentParser()
         parser.add_argument('action', action = 'store')
         parser.add_argument('profile', action = 'store', nargs = '?', default = 'default')
-        parser.add_argument('--config-file', action = 'store', default = os.path.join(cls.system['paths']['salal_root'], 'site_config.json'))
+        parser.add_argument('--config-file', action = 'store', default = os.path.join(cls.parameters['paths']['salal_root'], 'system_config.json'))
         parser.add_argument('--logging-level', action = 'store', default = 'INFO')
         cls._arguments = parser.parse_args()
         # we shouldn't do any logging until this point has been reached,
@@ -53,62 +53,62 @@ class Config:
     #---------------------------------------------------------------------------
 
     @classmethod
-    def load_site_configuration (cls):
-        logging.message('DEBUG', 'Loading site configuration from ' + cls._arguments.config_file)
-        with open(cls._arguments.config_file) as system_variables_fh:
-            utilities.deep_update(cls.system, json.load(system_variables_fh))
+    def load_system_configuration (cls):
+        logging.message('DEBUG', 'Loading system configuration from ' + cls._arguments.config_file)
+        with open(cls._arguments.config_file) as system_config_fh:
+            utilities.deep_update(cls.parameters, json.load(system_config_fh))
 
     #---------------------------------------------------------------------------
 
     @classmethod
     def load_user_configuration (cls):
-        config_file = os.path.expanduser(cls.system['paths']['user_config_file'])
+        config_file = os.path.expanduser(cls.parameters['paths']['user_config_file'])
         if os.path.isfile(config_file):
             logging.message('DEBUG', 'Loading user configuration from ' + config_file)
-            with open(config_file) as system_variables_fh:
-                utilities.deep_update(cls.system, json.load(system_variables_fh))
+            with open(config_file) as user_config_fh:
+                utilities.deep_update(cls.parameters, json.load(user_config_fh))
 
     #---------------------------------------------------------------------------
 
     @classmethod
-    def load_build_profiles (cls):
-        logging.message('DEBUG', 'Loading build profiles from ' + cls.system['paths']['profiles_file'])
-        with open(cls.system['paths']['profiles_file']) as build_profiles_fh:
-            cls._build_profiles = json.load(build_profiles_fh)
+    def load_project_configuration (cls):
+        logging.message('DEBUG', 'Loading project configuration from ' + cls.parameters['paths']['project_config_file'])
+        with open(cls.parameters['paths']['project_config_file']) as project_config_fh:
+            cls._project_config = json.load(project_config_fh)
         
     #---------------------------------------------------------------------------
 
     @classmethod
     def initialize_variables (cls):
-        logging.message('DEBUG', 'Using salal root directory of ' + cls.system['paths']['salal_root'])
+        logging.message('DEBUG', 'Using salal root directory of ' + cls.parameters['paths']['salal_root'])
         # convert the profile specifier to the correct profile name
         if cls._arguments.profile == 'default':
-            cls.system['profile'] = None
-            for build_profile in cls._build_profiles:
+            cls.parameters['profile'] = None
+            for build_profile in cls._project_config:
                 if build_profile == 'common':
                     continue
                 else:
-                    cls.system['profile'] = build_profile
+                    cls.parameters['profile'] = build_profile
                     break
-            if cls.system['profile'] == None:
+            if cls.parameters['profile'] == None:
                 logging.message('ERROR', 'Default profile specified, but there are no profiles configured')
-        elif cls._arguments.profile in cls._build_profiles:
-            cls.system['profile'] = cls._arguments.profile
+        elif cls._arguments.profile in cls._project_config:
+            cls.parameters['profile'] = cls._arguments.profile
         else:
             logging.message('ERROR', 'Specified profile ' + cls._arguments.profile + ' does not exist')
-        logging.message('INFO', 'Using profile ' + cls.system['profile'])
-        cls.system['paths']['profile_build_dir'] = os.path.join(cls.system['paths']['build_root'], cls.system['profile'])
+        logging.message('INFO', 'Using profile ' + cls.parameters['profile'])
+        cls.parameters['paths']['profile_build_dir'] = os.path.join(cls.parameters['paths']['build_root'], cls.parameters['profile'])
         
         logging.message('DEBUG', 'Initializing system and project variables')
-        cls.project = dict()
-        profile_vars = { 'system': cls.system, 'project': cls.project }
-        for var_type in ['system', 'project']:
-            if 'common' in cls._build_profiles and var_type in cls._build_profiles['common']:
-                utilities.deep_update(profile_vars[var_type], cls._build_profiles['common'][var_type])
-            if var_type in cls._build_profiles[cls.system['profile']]:
-                utilities.deep_update(profile_vars[var_type], cls._build_profiles[cls.system['profile']][var_type])
-        if 'theme_root' in config.system['paths']:
-            logging.message('INFO', 'Using theme ' + config.system['paths']['theme_root'])
+        cls.site = dict()
+        profile_vars = { 'parameters': cls.parameters, 'site': cls.site }
+        for var_type in ['parameters', 'site']:
+            if 'common' in cls._project_config and var_type in cls._project_config['common']:
+                utilities.deep_update(profile_vars[var_type], cls._project_config['common'][var_type])
+            if var_type in cls._project_config[cls.parameters['profile']]:
+                utilities.deep_update(profile_vars[var_type], cls._project_config[cls.parameters['profile']][var_type])
+        if 'theme_root' in config.parameters['paths']:
+            logging.message('INFO', 'Using theme ' + config.parameters['paths']['theme_root'])
                 
     #---------------------------------------------------------------------------
 
@@ -122,16 +122,16 @@ class Config:
         # and set the system path <extension_dirs> to a list of those that
         # are found.
         extension_locations = [
-            cls.system['paths']['salal_root'],
-            cls.system['paths']['theme_root'] if 'theme_root' in config.system['paths'] else None,
+            cls.parameters['paths']['salal_root'],
+            cls.parameters['paths']['theme_root'] if 'theme_root' in config.parameters['paths'] else None,
             'design'
         ]
-        config.system['paths']['extension_dirs'] = []
+        config.parameters['paths']['extension_dirs'] = []
         for location in extension_locations:
             if location:
-                extension_dir = os.path.join(location, cls.system['paths']['extensions_root'])
+                extension_dir = os.path.join(location, cls.parameters['paths']['extensions_root'])
                 if os.path.isdir(extension_dir):
-                    config.system['paths']['extension_dirs'].append(extension_dir)
+                    config.parameters['paths']['extension_dirs'].append(extension_dir)
                     logging.message('DEBUG', 'Registered extensions directory ' + extension_dir)
         
     #---------------------------------------------------------------------------

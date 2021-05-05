@@ -20,13 +20,13 @@ class Build:
     def configure_search_dirs (cls, dir_type):
         search_dirs = []
         # check for the appropriate type of directory within the project
-        project_search_dir = os.path.join(config.system['paths']['design_root'], config.system['paths'][dir_type + '_dir'])
+        project_search_dir = os.path.join(config.parameters['paths']['design_root'], config.parameters['paths'][dir_type + '_dir'])
         if os.path.isdir(project_search_dir):
             search_dirs.insert(0, project_search_dir)
         # check for the appropriate type of directory within the theme
         # directory, if a theme is defined
-        if 'theme_root' in config.system['paths']:
-            theme_search_dir = os.path.join(config.system['paths']['theme_root'], config.system['paths'][dir_type + '_dir'])
+        if 'theme_root' in config.parameters['paths']:
+            theme_search_dir = os.path.join(config.parameters['paths']['theme_root'], config.parameters['paths'][dir_type + '_dir'])
             if os.path.isdir(theme_search_dir):
                 search_dirs.insert(0, theme_search_dir)
         return search_dirs
@@ -39,15 +39,15 @@ class Build:
         files_selected = []
         for file_path in file_path_list:
             passed_check = True
-            if 'build' in config.system and 'locations' in config.system['build'] and location in config.system['build']['locations']:
-                if 'include' in config.system['build']['locations'][location]:
+            if 'build' in config.parameters and 'locations' in config.parameters['build'] and location in config.parameters['build']['locations']:
+                if 'include' in config.parameters['build']['locations'][location]:
                     passed_check = False
-                    for pattern in config.system['build']['locations'][location]['include']:
+                    for pattern in config.parameters['build']['locations'][location]['include']:
                         if re.search(pattern, file_path) != None:
                             passed_check = True
                             break
-                if passed_check and 'exclude' in config.system['build']['locations'][location]:
-                    for pattern in config.system['build']['locations'][location]['exclude']:
+                if passed_check and 'exclude' in config.parameters['build']['locations'][location]:
+                    for pattern in config.parameters['build']['locations'][location]['exclude']:
                         if re.search(pattern, file_path) != None:
                             passed_check = False
                             break
@@ -63,8 +63,8 @@ class Build:
     @classmethod
     def process_files (cls, source_relative_path_list, source_dir, target_dir, location):
         logging.message('DEBUG', 'Determining which files need to be rebuilt')
-        if 'build' in config.system and 'locations' in config.system['build'] and location in config.system['build']['locations'] and 'mappings' in config.system['build']['locations'][location]:
-            path_mappings = config.system['build']['locations'][location]['mappings']
+        if 'build' in config.parameters and 'locations' in config.parameters['build'] and location in config.parameters['build']['locations'] and 'mappings' in config.parameters['build']['locations'][location]:
+            path_mappings = config.parameters['build']['locations'][location]['mappings']
         else:
             path_mappings = []
         for source_relative_path in source_relative_path_list:
@@ -93,11 +93,11 @@ class Build:
     
     @classmethod
     def process_content (cls):
-        content_dir = config.system['paths']['content_root']
+        content_dir = config.parameters['paths']['content_root']
         logging.message('DEBUG', 'Processing content files from ' + content_dir)
-        content_files = utilities.find_files(config.system['paths']['content_root'])
+        content_files = utilities.find_files(config.parameters['paths']['content_root'])
         files_to_process = cls.select_files_to_process(content_files, 'content')
-        cls.process_files(files_to_process, content_dir, config.system['paths']['profile_build_dir'], 'content')
+        cls.process_files(files_to_process, content_dir, config.parameters['paths']['profile_build_dir'], 'content')
 
     #---------------------------------------------------------------------------
     @classmethod
@@ -119,7 +119,7 @@ class Build:
             logging.message('DEBUG', 'Processing resources from ' + resource_dir)
             resource_files = utilities.find_files(resource_dir)
             files_to_process = cls.select_files_to_process(resource_files, 'resources')
-            cls.process_files(files_to_process, resource_dir, config.system['paths']['profile_build_dir'], 'resources')
+            cls.process_files(files_to_process, resource_dir, config.parameters['paths']['profile_build_dir'], 'resources')
 
     #---------------------------------------------------------------------------
 
@@ -141,7 +141,7 @@ class Build:
             logging.message('DEBUG', 'Processing modules from ' + module_dir)
             module_files = utilities.find_files(module_dir)
             files_to_process = cls.select_files_to_process(module_files, 'modules')
-            cls.process_files(files_to_process, module_dir, config.system['paths']['profile_build_dir'], 'modules')
+            cls.process_files(files_to_process, module_dir, config.parameters['paths']['profile_build_dir'], 'modules')
         
     #---------------------------------------------------------------------------
 

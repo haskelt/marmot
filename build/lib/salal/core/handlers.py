@@ -35,7 +35,7 @@ class Handlers:
         # to the code that calls the <load_handler> method.
 
         handlers = dict()
-        for extension_dir in config.system['paths']['extension_dirs']:
+        for extension_dir in config.parameters['paths']['extension_dirs']:
             if os.path.isdir(os.path.join(extension_dir, directory)):
                 with os.scandir(os.path.join(extension_dir, directory)) as entries:
                     for entry in entries:

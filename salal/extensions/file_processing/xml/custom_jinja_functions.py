@@ -9,7 +9,7 @@ from salal.core.dependencies import dependencies
 #------------------------------------------------------------------------------
 
 def load_config(source):
-    config_file_path = os.path.join(config.system['paths']['config_root'], source + '.json')
+    config_file_path = os.path.join(config.parameters['paths']['config_root'], source + '.json')
     with open(os.path.join(config_file_path)) as config_file_fh:
         dependencies.resource_used(config_file_path)
         variables = json.load(config_file_fh)
@@ -20,9 +20,9 @@ def load_config(source):
 def page_attributes(page_id):
     # we use 'home' instead of a blank id
     if page_id == 'home':
-        page_path = os.path.join(config.system['paths']['content_root'], 'index.xml')
+        page_path = os.path.join(config.parameters['paths']['content_root'], 'index.xml')
     else:
-        matching_pages = glob.glob(config.system['paths']['content_root'] + '/**/' + page_id + '/index.xml', recursive=True)
+        matching_pages = glob.glob(config.parameters['paths']['content_root'] + '/**/' + page_id + '/index.xml', recursive=True)
         if len(matching_pages) > 1:
             raise ValueError('Non-unique page ID "' + page_id + '"')
         elif len(matching_pages) == 0:

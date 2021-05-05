@@ -13,19 +13,19 @@ class FileProcessing:
     @classmethod
     def initialize (cls):
         logging.message('DEBUG', 'Loading file processing handlers')
-        cls.handlers = handlers.load_handlers(config.system['paths']['file_processing_handlers_dir'])
+        cls.handlers = handlers.load_handlers(config.parameters['paths']['file_processing_handlers_dir'])
         if len(cls.handlers) == 0:
             logging.message('ERROR', 'No file processing handlers are installed, exiting')
         
-        if not 'file_handlers' in config.system or len(config.system['file_handlers']) == 0:
+        if not 'file_handlers' in config.parameters or len(config.parameters['file_handlers']) == 0:
             logging.message('ERROR', 'No file processing handlers are configured in the configuration files, exiting')
 
-        for handler in config.system['file_handlers']:
+        for handler in config.parameters['file_handlers']:
             if not handler in cls.handlers:
                 logging.message('ERROR', 'There is a configuration for a file processing handler ' + handler + ', but no such handler is installed')
-            if not 'include' in config.system['file_handlers'][handler]:
+            if not 'include' in config.parameters['file_handlers'][handler]:
                 logging.message('ERROR', 'Configuration for file processing handler ' + handler + ' must have an include pattern')
-            if not 'priority' in config.system['file_handlers'][handler]:
+            if not 'priority' in config.parameters['file_handlers'][handler]:
                 logging.message('ERROR', 'Configuration for file processing handler ' + handler + ' must have a priority')
         
     #---------------------------------------------------------------------------
@@ -34,13 +34,13 @@ class FileProcessing:
     def is_matching_handler (cls, file_path, handler):
         # check against include patterns
         matches = False
-        for pattern in config.system['file_handlers'][handler]['include']:
+        for pattern in config.parameters['file_handlers'][handler]['include']:
             if re.search(pattern, file_path) != None:
                 matches = True
                 break
         # check against exclude patterns, if any
-        if matches and 'exclude' in config.system['file_handlers'][handler]:
-            for pattern in config.system['file_handlers'][handler]['exclude']:
+        if matches and 'exclude' in config.parameters['file_handlers'][handler]:
+            for pattern in config.parameters['file_handlers'][handler]['exclude']:
                 if re.search(pattern, file_path) != None:
                     matches = False
                     break
@@ -57,10 +57,10 @@ class FileProcessing:
         # find the best matching handler
         best_handler = None
         best_priority = math.inf
-        for key in config.system['file_handlers']:
-            if cls.is_matching_handler(source_file_path, key) and config.system['file_handlers'][key]['priority'] < best_priority:
+        for key in config.parameters['file_handlers']:
+            if cls.is_matching_handler(source_file_path, key) and config.parameters['file_handlers'][key]['priority'] < best_priority:
                 best_handler = key
-                best_priority = config.system['file_handlers'][key]['priority']
+                best_priority = config.parameters['file_handlers'][key]['priority']
         if best_handler:
             logging.message('TRACE', 'Processing ' + source_file_path + ' using ' + best_handler + ' handler')
         else:

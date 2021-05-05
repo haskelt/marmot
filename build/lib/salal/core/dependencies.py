@@ -16,7 +16,7 @@ class DependencyManager:
         logging.message('DEBUG', 'Initializing dependency tracking')
 
         # read the build log
-        cls.build_log_file = os.path.join(config.system['paths']['config_root'], config.system['paths']['build_log_dir'], config.system['profile'] + '.json')
+        cls.build_log_file = os.path.join(config.parameters['paths']['config_root'], config.parameters['paths']['build_log_dir'], config.parameters['profile'] + '.json')
         if os.path.isfile(cls.build_log_file):
             with open(cls.build_log_file, 'r') as build_log_fh:
                 build_log = json.load(build_log_fh)
@@ -65,13 +65,13 @@ class DependencyManager:
             # throw an error here, but we do warn and trigger a
             # rebuild of any source files that referenced the
             # variable.
-            if not variable in config.project:
+            if not variable in config.site:
                 logging.message('WARN', 'Variable ' + variable + ' is in the build log but no longer exists')
                 variable_change_flags[variable] = True
-            elif variable_log[variable] != config.project[variable]:
+            elif variable_log[variable] != config.site[variable]:
                 logging.message('TRACE', 'Detected change to variable ' + variable)
                 variable_change_flags[variable] = True
-                variable_updates[variable] = config.project[variable]
+                variable_updates[variable] = config.site[variable]
             else:
                 variable_change_flags[variable] = False
         return variable_change_flags
@@ -174,7 +174,7 @@ class DependencyManager:
             cls.file_updates[cls.cur_file_key]['variables'].append(variable_name)
             if variable_name not in cls.variable_log and variable_name not in cls.variable_updates:
                 logging.message('TRACE', 'Detected use of new variable ' + variable_name + ', now tracking it');
-                cls.variable_updates[variable_name] = config.project[variable_name] 
+                cls.variable_updates[variable_name] = config.site[variable_name] 
 
     #---------------------------------------------------------------------------
 
@@ -258,7 +258,7 @@ class DependencyManager:
                 cls.file_log.pop(file_ref)
 
         # remove build directories that are now empty
-        empty_dirs = utilities.find_empty_subdirectories(config.system['paths']['profile_build_dir'])
+        empty_dirs = utilities.find_empty_subdirectories(config.parameters['paths']['profile_build_dir'])
         for dir in empty_dirs:
             logging.message('TRACE', 'Build directory ' + dir + ' no longer contains anything, deleting')
             os.rmdir(dir)
@@ -281,7 +281,7 @@ class DependencyManager:
         cls.remove_stale_references(cls.resource_log, cls.resource_change_flags, 'resource')
 
         # create the build log directory if it doesn't exist
-        os.makedirs(os.path.join(config.system['paths']['config_root'], config.system['paths']['build_log_dir']), exist_ok = True)
+        os.makedirs(os.path.join(config.parameters['paths']['config_root'], config.parameters['paths']['build_log_dir']), exist_ok = True)
         # write the file
         with open(cls.build_log_file, 'w') as build_log_fh:
             json.dump({'timestamp': cls.cur_build_time, 'files': cls.file_log, 'variables': cls.variable_log, 'templates': list(cls.template_log), 'resources': list(cls.resource_log)}, build_log_fh, default=str)

@@ -1,0 +1,55 @@
+{
+	"paths" : {
+		"user_config_file" : "~/.salal/user_config.json",
+		"config_root" : "config",
+		"content_root" : "content",
+		"design_root" : "design",
+		"template_dir" : "templates",
+		"resource_dir" : "resources",
+		"module_dir" : "modules",
+		"build_root" : "build",
+		"project_config_file" : "config/project_config.json",
+		"build_log_dir" : "build_log",
+		"extensions_root" : "extensions",
+		"command_handlers_dir" : "commands",
+		"file_processing_handlers_dir" : "file_processing"
+	},
+	"action_commands" : {
+		"build" : [
+			{
+				"type" : "internal",
+				"command" : "build"
+			}
+		]
+	},
+    "build": {
+	"locations": {
+	    "content": {
+		"mappings": [
+		    [ "\\.xml$", "\\.xml$", ".html" ]
+		]
+	    },
+	    "modules": {
+		"mappings": [
+		    [ "\\.\\w+$", "(^.+)\\.(\\w+)$", "\\2/\\1.\\2" ] 
+		],
+		"exclude": [ "\\.html$" ]
+	    }
+	}
+    },
+    "file_handlers": {
+	"xml": {
+	    "include": [ "\\.xml$" ],
+	    "priority": 1
+	},
+	"simple_expansion": {
+	    "include": [ "\\.css$", "\\.js$", "\\.py$" ],
+	    "priority": 1
+	},
+	"copying": {
+	    "include": [ ".+" ],
+	    "priority": 2
+	}
+    }
+    
+}
