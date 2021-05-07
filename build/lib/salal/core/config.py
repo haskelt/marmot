@@ -37,13 +37,13 @@ class Config:
         parser = argparse.ArgumentParser()
         parser.add_argument('action', action = 'store')
         parser.add_argument('profile', action = 'store', nargs = '?', default = 'default')
-        parser.add_argument('--config-file', action = 'store', default = os.path.join(cls.parameters['paths']['salal_root'], 'system_config.json'))
+        parser.add_argument('--config-file', action = 'store', default = os.path.join(cls.parameters['paths']['salal_root'], 'config', 'system_config.json'))
         parser.add_argument('--logging-level', action = 'store', default = 'INFO')
         cls._arguments = parser.parse_args()
         # we shouldn't do any logging until this point has been reached,
         # otherwise it won't be impacted by the logging level
         logging.set_logging_level(cls._arguments.logging_level)
-        cls.action = cls._arguments.action
+        cls.parameters['action'] = cls._arguments.action
         logging.message('DEBUG', 'Using salal root directory of ' + cls.parameters['paths']['salal_root'])
         logging.message('DEBUG', 'Parsed command line arguments')
 
@@ -110,35 +110,19 @@ class Config:
 
     @classmethod
     def do_profile_configuration (cls):
-        # check if any profiles are explicitly defined
-        if 'profiles' in cls.parameters and type(cls.parameters['profiles']) == list and len(cls.parameters['profiles']) > 0:
-            profiles_defined = True
-        else:
-            profiles_defined = False
-
-        # convert the profile specifier to the correct profile name
-        if cls._arguments.profile == 'default':
-            if profiles_defined:
-                cls.parameters['profile'] = cls.parameters['profiles'][0]
-            else:
-                cls.parameters['profile'] = 'default'
-        else:
-            if profiles_defined:
-                if cls._arguments.profile in cls.parameters['profiles']:
-                    cls.parameters['profile'] = cls._arguments.profile
-                else:
-                    logging.message('ERROR', 'Specified profile ' + cls._arguments.profile + ' does not exist')
-            else:
-                logging.message('ERROR', 'Profile ' + cls._arguments.profile + ' specified, but no profiles are defined')
-        logging.message('INFO', 'Using profile ' + cls.parameters['profile'])
+        # set profile-related parameters
+        cls.parameters['profile'] = cls._arguments.profile
         cls.parameters['paths']['profile_build_dir'] = os.path.join(cls.parameters['paths']['build_root'], cls.parameters['profile'])
-        
-        # check if there is a profile config file; if so, load and apply it
+        # for a non-default profile, load and apply the config file
         if cls.parameters['profile'] != 'default':
             profile_config_file = os.path.join(cls.parameters['paths']['config_root'], cls.parameters['paths']['profiles_dir'], cls.parameters['profile'] + '.json')
             if os.path.isfile(profile_config_file):
                 cls.load_configuration('profile', profile_config_file)
                 cls.apply_configuration('profile')
+            else:
+                logging.message('ERROR', 'Specified profile ' + cls._arguments.profile + ' does not exist')
+        # log the profile name
+        logging.message('INFO', 'Using profile ' + cls.parameters['profile'])
         
     #---------------------------------------------------------------------------
 

@@ -5,12 +5,12 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 additional_files = list(map(lambda entry: entry.replace('salal/', ''), glob.glob('salal/extensions/**/*.py', recursive=True)))
-additional_files.append('system_config.json')
+additional_files.append('config/system_config.json')
 print(additional_files)
     
 setuptools.setup(
     name="salal",
-    version="0.25.0-beta",
+    version="0.26.0-beta",
     author="Todd Haskell",
     author_email="todd@craggypeak.com",
     description="A system for building websites from templates and content",

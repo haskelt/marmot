@@ -26,7 +26,7 @@ class XMLHandler:
     def configure_modules (cls, node, env):
         module_dirs = [os.path.join(config.parameters['paths']['design_root'], config.parameters['paths']['module_dir'])]
         if 'theme_root' in config.parameters['paths']:
-            module_dirs.append(os.path.join(config.parameters['paths']['theme_root'], config.parameters['paths']['module_dir']))
+            module_dirs.append(os.path.join(config.parameters['paths']['theme_root'], config.parameters['paths']['design_root'], config.parameters['paths']['module_dir']))
         for module in node.attrib['modules'].split():
             # try to locate the module directory
             module_location = None
@@ -134,7 +134,7 @@ class XMLHandler:
         # template will be found first if there is one
         template_dirs = [os.path.join(config.parameters['paths']['design_root'], config.parameters['paths']['template_dir'])] 
         if 'theme_root' in config.parameters['paths']:
-            template_dirs.append(os.path.join(config.parameters['paths']['theme_root'], config.parameters['paths']['template_dir']))
+            template_dirs.append(os.path.join(config.parameters['paths']['theme_root'], config.parameters['paths']['design_root'], config.parameters['paths']['template_dir']))
         # Initialize Jinja
         #env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dirs), trim_blocks = True, lstrip_blocks = True)
         env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dirs))

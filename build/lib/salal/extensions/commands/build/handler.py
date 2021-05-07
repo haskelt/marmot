@@ -26,7 +26,7 @@ class Build:
         # check for the appropriate type of directory within the theme
         # directory, if a theme is defined
         if 'theme_root' in config.parameters['paths']:
-            theme_search_dir = os.path.join(config.parameters['paths']['theme_root'], config.parameters['paths'][dir_type + '_dir'])
+            theme_search_dir = os.path.join(config.parameters['paths']['theme_root'], config.parameters['paths']['design_root'], config.parameters['paths'][dir_type + '_dir'])
             if os.path.isdir(theme_search_dir):
                 search_dirs.insert(0, theme_search_dir)
         return search_dirs
