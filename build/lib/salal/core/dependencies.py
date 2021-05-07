@@ -65,13 +65,13 @@ class DependencyManager:
             # throw an error here, but we do warn and trigger a
             # rebuild of any source files that referenced the
             # variable.
-            if not variable in config.site:
+            if not variable in config.globals:
                 logging.message('WARN', 'Variable ' + variable + ' is in the build log but no longer exists')
                 variable_change_flags[variable] = True
-            elif variable_log[variable] != config.site[variable]:
+            elif variable_log[variable] != config.globals[variable]:
                 logging.message('TRACE', 'Detected change to variable ' + variable)
                 variable_change_flags[variable] = True
-                variable_updates[variable] = config.site[variable]
+                variable_updates[variable] = config.globals[variable]
             else:
                 variable_change_flags[variable] = False
         return variable_change_flags
@@ -174,7 +174,7 @@ class DependencyManager:
             cls.file_updates[cls.cur_file_key]['variables'].append(variable_name)
             if variable_name not in cls.variable_log and variable_name not in cls.variable_updates:
                 logging.message('TRACE', 'Detected use of new variable ' + variable_name + ', now tracking it');
-                cls.variable_updates[variable_name] = config.site[variable_name] 
+                cls.variable_updates[variable_name] = config.globals[variable_name] 
 
     #---------------------------------------------------------------------------
 

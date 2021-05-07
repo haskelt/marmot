@@ -75,7 +75,7 @@ class XMLHandler:
         # set the text content to the empty string.
         if node.text:
             content_template = env.from_string(node.text)
-            node.text = content_template.render({'site': variables})
+            node.text = content_template.render({'globals': variables})
         else:
             node.text = ''
             
@@ -87,7 +87,7 @@ class XMLHandler:
                 node.text += cls.render_node(child, env, variables)
                 if child.tail:
                     content_template = env.from_string(child.tail)
-                    node.text += content_template.render({'site': variables})
+                    node.text += content_template.render({'globals': variables})
 
         # Initialize the variables that will be passed to Jinja for rendering
         # the node. We start with whatever variables were passed in, and
@@ -95,7 +95,7 @@ class XMLHandler:
         # to this node. Those include any attributes on the node, as well as
         # a special variable 'this.content' that contains the node text that
         # was set above.
-        render_variables = {'site': variables}
+        render_variables = {'globals': variables}
         render_variables['this'] = {'content': node.text} 
         if node.attrib:
             render_variables['this'].update(node.attrib)
@@ -145,7 +145,7 @@ class XMLHandler:
         # Register Salal-specific Jinja functions
         custom_jinja_functions.register_functions(env)
         # Do template expansion on the source file
-        xml_root.text = cls.render_node(xml_root, env, VariableTracker(config.site, success_callback = dependencies.variable_used, failure_callback = dependencies.variable_not_found))
+        xml_root.text = cls.render_node(xml_root, env, VariableTracker(config.globals, success_callback = dependencies.variable_used, failure_callback = dependencies.variable_not_found))
         # Write the expanded file to the target directory
         with open(target_file_path, mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
             output_fh.write(xml_root.text)

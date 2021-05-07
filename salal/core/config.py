@@ -18,26 +18,22 @@ class Config:
 
     @classmethod
     def initialize (cls):
-        cls.set_salal_root()
+        cls.config_data = dict()
+        cls.parameters = dict()
+        cls.globals = dict()
         cls.parse_arguments()
-        cls.load_system_configuration()
-        cls.load_user_configuration()
-        cls.load_project_configuration()
-        cls.initialize_variables()
+        cls.do_system_configuration()
+        cls.do_user_configuration()
+        cls.do_project_and_theme_configuration()
+        cls.do_profile_configuration()
         cls.set_extension_directories()
         
     #---------------------------------------------------------------------------
  
     @classmethod
-    def set_salal_root (cls):
-        cls.parameters = {}
+    def parse_arguments (cls):
         cls.parameters['paths'] = {}
         cls.parameters['paths']['salal_root'] = os.path.normpath(os.path.dirname(sys.modules['__main__'].__file__))
-    
-    #---------------------------------------------------------------------------
-   
-    @classmethod
-    def parse_arguments (cls):
         parser = argparse.ArgumentParser()
         parser.add_argument('action', action = 'store')
         parser.add_argument('profile', action = 'store', nargs = '?', default = 'default')
@@ -48,68 +44,102 @@ class Config:
         # otherwise it won't be impacted by the logging level
         logging.set_logging_level(cls._arguments.logging_level)
         cls.action = cls._arguments.action
+        logging.message('DEBUG', 'Using salal root directory of ' + cls.parameters['paths']['salal_root'])
         logging.message('DEBUG', 'Parsed command line arguments')
 
     #---------------------------------------------------------------------------
 
     @classmethod
-    def load_system_configuration (cls):
-        logging.message('DEBUG', 'Loading system configuration from ' + cls._arguments.config_file)
-        with open(cls._arguments.config_file) as system_config_fh:
-            utilities.deep_update(cls.parameters, json.load(system_config_fh))
-
-    #---------------------------------------------------------------------------
-
-    @classmethod
-    def load_user_configuration (cls):
-        config_file = os.path.expanduser(cls.parameters['paths']['user_config_file'])
-        if os.path.isfile(config_file):
-            logging.message('DEBUG', 'Loading user configuration from ' + config_file)
-            with open(config_file) as user_config_fh:
-                utilities.deep_update(cls.parameters, json.load(user_config_fh))
-
-    #---------------------------------------------------------------------------
-
-    @classmethod
-    def load_project_configuration (cls):
-        logging.message('DEBUG', 'Loading project configuration from ' + cls.parameters['paths']['project_config_file'])
-        with open(cls.parameters['paths']['project_config_file']) as project_config_fh:
-            cls._project_config = json.load(project_config_fh)
+    def load_configuration (cls, config_type, config_file):
+        logging.message('DEBUG', 'Loading ' + config_type + ' configuration from ' + config_file)
+        with open(config_file) as config_fh:
+            cls.config_data[config_type] = json.load(config_fh)
         
     #---------------------------------------------------------------------------
+    
+    @classmethod
+    def apply_configuration (cls, config_type):
+        logging.message('DEBUG', 'Applying ' + config_type + ' configuration')
+        if 'parameters' in cls.config_data[config_type]:
+            utilities.deep_update(cls.parameters, cls.config_data[config_type]['parameters'])
+        if 'globals' in cls.config_data[config_type]:
+            utilities.deep_update(cls.globals, cls.config_data[config_type]['globals'])
+
+    #---------------------------------------------------------------------------
 
     @classmethod
-    def initialize_variables (cls):
-        logging.message('DEBUG', 'Using salal root directory of ' + cls.parameters['paths']['salal_root'])
+    def do_system_configuration (cls):
+        # load and apply the system configuration
+        if not os.path.isfile(cls._arguments.config_file):
+            logging.message('ERROR', 'Fatal error: System config file missing')
+        cls.load_configuration('system', cls._arguments.config_file)
+        cls.apply_configuration('system')
+
+    #---------------------------------------------------------------------------
+
+    @classmethod
+    def do_user_configuration (cls):
+        # load and apply the user configuration, if present
+        user_config_file = os.path.expanduser(cls.parameters['paths']['user_config_file'])
+        if os.path.isfile(user_config_file):
+            cls.load_configuration('user', user_config_file)
+            
+            cls.apply_configuration('user')
+
+    #---------------------------------------------------------------------------
+
+    @classmethod
+    def do_project_and_theme_configuration (cls):
+        # load the project configuration
+        project_config_file = os.path.join(cls.parameters['paths']['config_root'], cls.parameters['paths']['project_config_file'])
+        if os.path.isfile(project_config_file):
+            cls.load_configuration('project', project_config_file)
+            # check if there is a theme; if so, load and apply any theme
+            # configuration
+            if 'parameters' in cls.config_data['project'] and 'paths' in cls.config_data['project']['parameters'] and 'theme_root' in cls.config_data['project']['parameters']['paths']:
+                theme_root = cls.config_data['project']['parameters']['paths']['theme_root']
+                logging.message('INFO', 'Using theme ' + theme_root)
+                theme_config_file = os.path.join(theme_root, cls.parameters['paths']['config_root'], cls.parameters['paths']['theme_config_file'])
+                if os.path.isfile(theme_config_file):
+                    cls.load_configuration('theme', theme_config_file)
+                    cls.apply_configuration('theme')
+            # apply the project configuration
+            cls.apply_configuration('project')
+
+    #---------------------------------------------------------------------------
+
+    @classmethod
+    def do_profile_configuration (cls):
+        # check if any profiles are explicitly defined
+        if 'profiles' in cls.parameters and type(cls.parameters['profiles']) == list and len(cls.parameters['profiles']) > 0:
+            profiles_defined = True
+        else:
+            profiles_defined = False
+
         # convert the profile specifier to the correct profile name
         if cls._arguments.profile == 'default':
-            cls.parameters['profile'] = None
-            for build_profile in cls._project_config:
-                if build_profile == 'common':
-                    continue
-                else:
-                    cls.parameters['profile'] = build_profile
-                    break
-            if cls.parameters['profile'] == None:
-                logging.message('ERROR', 'Default profile specified, but there are no profiles configured')
-        elif cls._arguments.profile in cls._project_config:
-            cls.parameters['profile'] = cls._arguments.profile
+            if profiles_defined:
+                cls.parameters['profile'] = cls.parameters['profiles'][0]
+            else:
+                cls.parameters['profile'] = 'default'
         else:
-            logging.message('ERROR', 'Specified profile ' + cls._arguments.profile + ' does not exist')
+            if profiles_defined:
+                if cls._arguments.profile in cls.parameters['profiles']:
+                    cls.parameters['profile'] = cls._arguments.profile
+                else:
+                    logging.message('ERROR', 'Specified profile ' + cls._arguments.profile + ' does not exist')
+            else:
+                logging.message('ERROR', 'Profile ' + cls._arguments.profile + ' specified, but no profiles are defined')
         logging.message('INFO', 'Using profile ' + cls.parameters['profile'])
         cls.parameters['paths']['profile_build_dir'] = os.path.join(cls.parameters['paths']['build_root'], cls.parameters['profile'])
         
-        logging.message('DEBUG', 'Initializing system and project variables')
-        cls.site = dict()
-        profile_vars = { 'parameters': cls.parameters, 'site': cls.site }
-        for var_type in ['parameters', 'site']:
-            if 'common' in cls._project_config and var_type in cls._project_config['common']:
-                utilities.deep_update(profile_vars[var_type], cls._project_config['common'][var_type])
-            if var_type in cls._project_config[cls.parameters['profile']]:
-                utilities.deep_update(profile_vars[var_type], cls._project_config[cls.parameters['profile']][var_type])
-        if 'theme_root' in config.parameters['paths']:
-            logging.message('INFO', 'Using theme ' + config.parameters['paths']['theme_root'])
-                
+        # check if there is a profile config file; if so, load and apply it
+        if cls.parameters['profile'] != 'default':
+            profile_config_file = os.path.join(cls.parameters['paths']['config_root'], cls.parameters['paths']['profiles_dir'], cls.parameters['profile'] + '.json')
+            if os.path.isfile(profile_config_file):
+                cls.load_configuration('profile', profile_config_file)
+                cls.apply_configuration('profile')
+        
     #---------------------------------------------------------------------------
 
     @classmethod
