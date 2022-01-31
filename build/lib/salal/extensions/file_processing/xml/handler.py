@@ -54,8 +54,13 @@ class XMLHandler:
     #---------------------------------------------------------------------------
 
     @classmethod
-    def render_node (cls, node, env, variables):
-
+    def render_node (cls, node, env, global_variables, parent_variables):
+        # Store the attributes on the node (later passed to the render
+        # function as 'this')
+        this_variables = dict()
+        if node.attrib:
+            this_variables.update(node.attrib)
+            
         # A tage name beginning with _ indicates a preprocessor directive, i.e.,
         # something needs to be done with the node before further processing
         if node.tag.startswith('_'):
@@ -75,7 +80,7 @@ class XMLHandler:
         # set the text content to the empty string.
         if node.text:
             content_template = env.from_string(node.text)
-            node.text = content_template.render({'globals': variables})
+            node.text = content_template.render({'globals': global_variables, 'parent': parent_variables})
         else:
             node.text = ''
             
@@ -84,10 +89,10 @@ class XMLHandler:
         # append them to the node's text.
         if len(node) > 0:
             for child in node:
-                node.text += cls.render_node(child, env, variables)
+                node.text += cls.render_node(child, env, global_variables, this_variables)
                 if child.tail:
                     content_template = env.from_string(child.tail)
-                    node.text += content_template.render({'globals': variables})
+                    node.text += content_template.render({'globals': global_variables, 'parent': this_variables})
 
         # Initialize the variables that will be passed to Jinja for rendering
         # the node. We start with whatever variables were passed in, and
@@ -95,10 +100,8 @@ class XMLHandler:
         # to this node. Those include any attributes on the node, as well as
         # a special variable 'this.content' that contains the node text that
         # was set above.
-        render_variables = {'globals': variables}
-        render_variables['this'] = {'content': node.text} 
-        if node.attrib:
-            render_variables['this'].update(node.attrib)
+        this_variables['content'] = node.text
+        render_variables = {'globals': global_variables, 'parent': parent_variables, 'this': this_variables}
             
         # Load the template for this node
         if node.tag.startswith('_'):
@@ -145,7 +148,7 @@ class XMLHandler:
         # Register Salal-specific Jinja functions
         custom_jinja_functions.register_functions(env)
         # Do template expansion on the source file
-        xml_root.text = cls.render_node(xml_root, env, VariableTracker(config.globals, success_callback = dependencies.variable_used, failure_callback = dependencies.variable_not_found))
+        xml_root.text = cls.render_node(xml_root, env, VariableTracker(config.globals, success_callback = dependencies.variable_used, failure_callback = dependencies.variable_not_found), None)
         # Write the expanded file to the target directory
         with open(target_file_path, mode = 'w', encoding = 'utf-8', newline = '\n') as output_fh:
             output_fh.write(xml_root.text)
